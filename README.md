@@ -1,4 +1,4 @@
-#bazel rules for GHDL
+# bazel rules for GHDL
 
 The rules are currently only tested on linux and most probably doesn't
 work on windows, there is also no toolchain set up for windows.
@@ -16,8 +16,7 @@ Example use:
 external non bazel repository
 
 ```console
-$ bazelisk build @ghdl_example//:ghdl_example
-foo
+$ bazelisk build @ghdl_example//...
 ```
 
 tests:

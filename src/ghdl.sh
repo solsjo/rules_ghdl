@@ -14,6 +14,6 @@ docker run --rm -t \
   --volume $output_base_path:$output_base_path \
   --volume $root:$root \
   --workdir $(pwd) \
-  ghdl/vunit:llvm-master sh -c "$*"
+  ghdl/vunit:llvm-master sh -c "ghdl $*"
 
 exit $?
