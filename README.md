@@ -11,17 +11,23 @@ One can register your own toolchain and point to the real path locally.
 Another suggestion is to add ghdl as an external non bazel repository,
 and let bazel build it for you; and point the compiler_path to that target.
 
+tests:
+
+```console
+$ bazelisk build @rules_ghdl//test:counter
+```
+
 Example use:
 
 external non bazel repository
 
 ```console
 $ bazelisk build @ghdl_example//...
+
 ```
 
-tests:
-
 ```console
-$ bazelisk build @rules_ghdl//test:counter
+$ bazelisk build @ghdl_example//... --sandbox_debug
+
 ```
 

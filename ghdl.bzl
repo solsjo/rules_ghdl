@@ -1,14 +1,18 @@
 # A provider with one field, transitive_sources.
-GHDLFiles = provider(fields = ["transitive_sources", "outs", "dep_map", "lib_map", "lib_name"])
-
+GHDLFiles = provider(
+    fields = [
+        "transitive_sources",
+        "outs",
+        "lib_name",
+        "src_map",
+    ]
+)
 
 def get_dir(dep):
-  return dep[GHDLFiles].outs[0].dirname
-
+  return dep.dirname
 
 def get_short_path(src):
   return src.path
-
 
 def get_transitive_srcs(srcs, deps):
   """Obtain the source files for a target and its transitive dependencies.
@@ -23,51 +27,62 @@ def get_transitive_srcs(srcs, deps):
         srcs,
         transitive = [dep[GHDLFiles].transitive_sources for dep in deps])
 
+def _prepare_cfg_file_content(ctx, args, i_path, lib_name, old_cfg):
+
+    # cfg file generation
+    new_lib_file = ctx.actions.declare_file(i_path + "/" + "work-obj08.cf")
+    curr_src_lib_paths = new_lib_file.dirname.split(lib_name)
+    work_dir = curr_src_lib_paths[0] + lib_name
+    args.add(old_cfg.path)
+    args.add(new_lib_file.path)
+    args.add("cd " + work_dir)
+    args.add("&&")
+   
+    return new_lib_file
+
+def _prepare_hdl_files(ctx, i_path, src):
+
+    # o file generation
+    out_name = "{}.o".format(i_path + "/" + src.basename.split(".")[0])
+    out_o = ctx.actions.declare_file(out_name)
+
+    sym_src = ctx.actions.declare_file(i_path + "/" + src.path)
+    ctx.actions.symlink(output=sym_src, target_file=src)
+
+    return sym_src, out_o
 
 def _ghdl_units_impl(ctx):
     # To not pick a fight with the internals of ghdl, the compilation of any
     # vhd file is delayed to the ghdl_binary rule.
-    # So ghdl library is only a collection phase.
+    # So ghdl units is only a collection phase.
 
     trans_srcs = get_transitive_srcs(
         ctx.files.srcs,
         ctx.attr.deps
     )
 
-    # Update lib map:
     lib_id = ctx.label.workspace_name + "/" + ctx.attr.lib[GHDLFiles].lib_name
-    lib_map = {}
+
+    unit_settings = []
+    unit_lib_deps = []
+    src_map = {}
+
     for dep in ctx.attr.deps:
-        for key, values in dep[GHDLFiles].lib_map.items():
-            if key not in lib_map:
-                lib_map[lib_id] = []
-                for value in values:
-                    lib_map[lib_id].append(value)
-            else:
-                for value in values:
-                  if value not in lib_map[lib_id]:
-                      lib_map[lib_id].append(value)
+        src_map.update(dep[GHDLFiles].src_map)
+        for src, settings in dep[GHDLFiles].src_map.items():
+            if lib_id != settings["lib_name"]:
+                unit_lib_deps.append(settings["lib_name"])
 
-    if lib_id not in lib_map:
-        lib_map[lib_id] = []
     for src in ctx.files.srcs:
-       lib_map[lib_id].append(src)
-
-    dep_map = {}
-    for src in ctx.files.srcs:
-        dep_map[src] = []
-        for dep in ctx.attr.deps:
-            dep_map.update(dep[GHDLFiles].dep_map.items())
-            dep_map[src] += dep[GHDLFiles].lib_map.keys() 
-
-    print(dep_map)
-    print(lib_map)
+        src_map[src]={
+            "unit_lib_deps": unit_lib_deps,
+            "lib_name": lib_id,
+            "unit_settings": unit_settings}
 
     return [
         DefaultInfo(files = depset(trans_srcs)),
-        GHDLFiles(transitive_sources=trans_srcs, dep_map=dep_map, lib_map=lib_map, lib_name=ctx.attr.lib[GHDLFiles].lib_name)
+        GHDLFiles(transitive_sources=trans_srcs, lib_name=lib_id, src_map=src_map)
     ]
-
 
 
 def _ghdl_testbench_impl(ctx):
@@ -79,56 +94,123 @@ def _ghdl_testbench_impl(ctx):
         )
     srcs = trans_srcs.to_list()
     outs = []
-    out = ctx.actions.declare_file("counter_tb")
-    outs.append(out)
-    work_cfg = ctx.actions.declare_file("work-obj93.cf")
-    out_name = "{}.o".format(src.basename.split(".")[0])
-    out_o = ctx.actions.declare_file(out_name)
+    lib_cfg_map = {}
+    compiled_output_files = []
+    i = 0
+    out_o = None
+    sym_o_files = []
+    sym_srcs = []
+    _symed_sources = []
 
-    
-    # TODO: Consider placing the lib_map in an output from a ghdl_units action
-    # so that bazel analysis won't have to be performed again
-    # Similar for compilation / simulation flags
-    # will need a wrapper script here instead of raw ghdl invocation...
+    src_map = {}
+    for dep in ctx.attr.deps:
+        for src, settings in dep[GHDLFiles].src_map.items():
+            if src not in src_map:
+                src_map[src] = settings
+
     for src in srcs:
+        lib = src_map[src]["lib_name"]
+        lib_name = lib.split("/")[-1]
+
+        p_deps = []
+        for lib in src_map[src]["unit_lib_deps"]:
+            p_deps.append(lib_cfg_map[lib])
+
+        # TODO: test setting to None instead
+        if lib not in lib_cfg_map:
+            lib_cfg_map[lib] = ctx.attr._initial_lib_file.files.to_list()[0]
+        curr_lib_file = lib_cfg_map[lib]
+
+        i_path = str(i) + "/" + src.basename.split(".")[0] + "/" + lib_name
         args = ctx.actions.args()
+        new_lib_file = _prepare_cfg_file_content(
+            ctx,
+            args,
+            i_path,
+            lib_name,
+            curr_lib_file,
+        )
+        sym_src, out_o = _prepare_hdl_files(ctx, i_path, src)
+        args.add("ghdl")
         args.add("-a")
+        args.add("--std=08")
         args.add("--ieee=synopsys --warn-no-vital-generic") # TODO: make flags an option instead
         args.add("--work=work") 
-        args.add("--workdir={}".format(out.dirname))
-        args.add_all(ctx.attr.deps, format_each="-P=%s", map_each=get_dir)
-        args.add_all(ctx.files.srcs, map_each=get_short_path)
+        args.add_all(p_deps, format_each="-P%s", map_each=get_dir)
+        args.add(src.path)
         ctx.actions.run(
-            mnemonic = "ghdl",
+            mnemonic = "ghdlWrapper",
             executable = info.compiler_path.files.to_list()[0].path,
             tools = [info.compiler_path.files.to_list()[0]],
             arguments = [args],
-            inputs = srcs,
-            outputs = [work_cfg, out_o],
+            inputs = [curr_lib_file, sym_src],
+            outputs = [new_lib_file, out_o],
         )
-    
+
+        # Update lib file used for the lib
+        lib_cfg_map[lib]=new_lib_file
+
+        # Save the output files, they will be needed later, in the
+        # elaboration stage.
+        compiled_output_files.append(out_o)
+
+        # Save the input files, they will be needed later, in the
+        # elaboation stage
+        sym_srcs.append(sym_src)
+        i = i + 1
+
+    # Last used path, why do we use this?
+    i_path = str(i) + "/" + src.basename.split(".")[0] + "/" + lib_name
+
+    for i in range(len(srcs)):
+        o_file = compiled_output_files[i]
+        out_name = "{}".format(i_path + "/" + o_file.basename)
+        d = ctx.actions.declare_file(out_name)
+        sym_o_files.append(d)
+        ctx.actions.symlink(output=d, target_file=o_file)
+          
+        src = srcs[i]
+        x = ctx.actions.declare_file(i_path + "/" + src.path)
+        ctx.actions.symlink(output=x, target_file=src)
+        _symed_sources.append(x)
+   
+    test_bin = ctx.actions.declare_file(ctx.attr.entity_name)
+    curr_lib_file = lib_cfg_map[lib]
+    #new_lib_file = ctx.actions.declare_file(i_path + "/" + "work-obj08.cf")
 
     args = ctx.actions.args()
+    args = ctx.actions.args()
+    new_lib_file = _prepare_cfg_file_content(
+        ctx,
+        args,
+        i_path,
+        lib_name,
+        curr_lib_file,
+    )
+    args.add("ghdl")
     args.add("-e")
+    args.add("-o {}".format(test_bin.basename))
+    args.add("--std=08")
     args.add("--ieee=synopsys --warn-no-vital-generic") # TODO: make flags an option instead
     args.add("--work=work") 
-    args.add("--workdir={}".format(out.dirname))
-    args.add_all(ctx.attr.deps, format_each="-P=%s", map_each=get_dir)
-    args.add("-o {}".format(out.path))
-    args.add(out.basename)
-
+    args.add_all(lib_cfg_map.values(), format_each="-P%s", map_each=get_dir)
+    args.add(test_bin.basename)
+    args.add("&&")
+    args.add("cd -")
+    args.add("&&")
+    args.add("cp " + str(sym_o_files[-1].dirname.split(lib_name)[0]) + lib_name + "/" + test_bin.basename +" " + str(test_bin.path))
     ctx.actions.run(
         mnemonic = "ghdl",
         executable = info.compiler_path.files.to_list()[0].path,
         tools = [info.compiler_path.files.to_list()[0]],
         arguments = [args],
-        inputs = srcs + [work_cfg, out_o],
-        outputs = outs,
+        inputs = [curr_lib_file] + compiled_output_files + [ctx.attr._initial_lib_file.files.to_list()[0]] + srcs + sym_srcs + _symed_sources + lib_cfg_map.values() + sym_o_files,
+        outputs = [new_lib_file, test_bin],
     )
 
     return [
-        DefaultInfo(files = depset(outs)),
-        GHDLFiles(transitive_sources=trans_srcs, outs=outs)
+        DefaultInfo(files = depset([test_bin])),
+        GHDLFiles(transitive_sources=trans_srcs, outs=[test_bin])
     ]
 
     
@@ -151,11 +233,13 @@ ghdl_library = rule(
     implementation = _ghdl_library_impl,
 )
 
-#ghdl_testbench = rule(
-#    implementation = _ghdl_testbench_impl,
-#    attrs = {
-#        "srcs": attr.label(allow_single_file = [".vhd", ".v"], mandatory = True),
-#        "deps": attr.label_list(allow_files = [".o", ".a"]),
-#    },
-#    toolchains = ["//:ghdl_toolchain_type"]
-#)
+ghdl_testbench = rule(
+    implementation = _ghdl_testbench_impl,
+    attrs = {
+        "entity_name": attr.string(mandatory=True),
+        "srcs": attr.label(allow_single_file = [".vhd", ".v"], mandatory = True),
+        "deps": attr.label_list(),
+        "_initial_lib_file": attr.label(allow_single_file=True, default="//:initial_lib_file")
+    },
+    toolchains = ["@rules_ghdl//:ghdl_toolchain_type"]
+)

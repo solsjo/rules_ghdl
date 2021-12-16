@@ -9,11 +9,17 @@ repo_name=$(basename $(readlink -f $(pwd)))
 root=$(dirname \
        $(readlink -f $output_base_path/execroot/$repo_name/WORKSPACE))
 
+curr_lib_file="$1"; shift
+new_lib_file="$1"; shift
+ghdl_args="$@"
+
+data="content=\"\$(cat $curr_lib_file)\"; if [ -z \"\$content\" ]; then echo \"\"; else cat $curr_lib_file > $new_lib_file; fi; $ghdl_args"
+
 docker run --rm -t \
   --user "$(id -u):$(id -g)" \
   --volume $output_base_path:$output_base_path \
-  --volume $root:$root \
-  --workdir $(pwd) \
-  ghdl/vunit:llvm-master sh -c "ghdl $*"
+  --volume "$root":"$root" \
+  --workdir "$PWD" \
+  ghdl/vunit:llvm-master sh -c "$data"
 
 exit $?

@@ -1,4 +1,4 @@
-load("@rules_ghdl//:ghdl.bzl", "ghdl_units", "ghdl_library") #, "ghdl_testbench")
+load("@rules_ghdl//:ghdl.bzl", "ghdl_units", "ghdl_library", "ghdl_testbench")
 
 ghdl_library(name="ghdl_example_lib")
 
@@ -20,7 +20,9 @@ ghdl_units(
     lib = ":ghdl_example_lib"
 )
 
-#ghdl_testbench(
-#    name = "ghdl_example_tb",
-#    deps = [":counter"]
-#)
+ghdl_testbench(
+    name = "ghdl_example_tb",
+    entity_name = "counter_tb",
+    srcs = ":testbench/counter_tb.vhd",
+    deps = [":counter_tb"]
+)

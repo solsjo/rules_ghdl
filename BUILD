@@ -42,3 +42,5 @@ filegroup(
     name="readme",
     srcs=["README.md"]
 )
+
+exports_files(["initial_lib_file"])
