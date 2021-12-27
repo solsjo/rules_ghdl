@@ -5,14 +5,7 @@ toolchain_type(name = "ghdl_toolchain_type",
 
 ghdl_toolchain(
     name = "ghdl_linux",
-    # TODO: arch flags isn't used yet, and might not be used in the future
-    # either, it exists as a placeholder
-    arch_flags = [
-        "--arch=Linux",
-        "--debug_everything",
-    ],
-    #compiler_path = "", # by default a docker image is used instead of the
-    # local toolchain.
+    #compiler_path = "", # by default a docker image is used.
     visibility = ["//visibility:public"],
 )
 
@@ -34,13 +27,11 @@ toolchain(
         "@platforms//os:linux",
         "@platforms//cpu:x86_64",
     ],
-    toolchain = "//:ghdl_linux",
-    toolchain_type = ":ghdl_toolchain_type",
+    toolchain = "@rules_ghdl//:ghdl_linux",
+    toolchain_type = "@rules_ghdl//:ghdl_toolchain_type",
 )
 
 filegroup(
     name="readme",
     srcs=["README.md"]
 )
-
-exports_files(["initial_lib_file"])
