@@ -86,6 +86,8 @@ def _ghdl_units_impl(ctx):
     unit_lib_deps = []
     src_map = {}
 
+    # TODO: Use a set instead, also, should probably only add direct deps and not
+    # transitive
     for dep in ctx.attr.deps:
         src_map.update(dep[GHDLFiles].src_map)
         for src, settings in dep[GHDLFiles].src_map.items():
@@ -207,7 +209,7 @@ def _ghdl_testbench_impl(ctx):
     src_files.extend(srcs)
     src_files.extend(_elaboration_sym_srcs)
 
-    test_bin = ctx.actions.declare_file(working_dir + "/" + ctx.attr.entity_name)
+    test_bin = ctx.actions.declare_file("{}/{}".format(working_dir,ctx.attr.entity_name))
     curr_lib_file = lib_cfg_map[lib]
 
     args = ctx.actions.args()
@@ -264,10 +266,12 @@ ghdl_library = rule(
     implementation = _ghdl_library_impl,
 )
 
+# TODO: Should probably be renamed to ghdl_elaboration
 ghdl_testbench = rule(
     implementation = _ghdl_testbench_impl,
     attrs = {
         "entity_name": attr.string(mandatory=True),
+        # TODO: Remove sources from testbench rule
         "srcs": attr.label(allow_single_file = [".vhd", ".v"], mandatory = True),
         "deps": attr.label_list(),
     },
