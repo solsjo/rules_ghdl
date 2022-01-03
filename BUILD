@@ -5,7 +5,11 @@ toolchain_type(name = "ghdl_toolchain_type",
 
 ghdl_toolchain(
     name = "ghdl_linux",
-    #compiler_path = "", # by default a docker image is used.
+    # compiler_path = "", # by default a docker image is used.
+    # This reduces the effeciency of the the build since a new docker
+    # instance is triggered for each analysis and elaboration.
+    # TODO: compile ghdl, with bazel if possible, and reference that
+    # by default.
     visibility = ["//visibility:public"],
 )
 
