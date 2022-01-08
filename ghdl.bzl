@@ -1,5 +1,3 @@
-load("@bazel_skylib//lib:paths.bzl", "paths")
-
 GHDLFiles = provider(
     fields = [
         "transitive_sources",
