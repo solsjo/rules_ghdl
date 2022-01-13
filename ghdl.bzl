@@ -29,16 +29,16 @@ def get_transitive_srcs(srcs, deps):
 def _prepare_cfg_file_content(ctx, args, working_dir, lib_name, old_cfg):
 
     # cfg file generation
-    new_lib_file_path = "{}/{}".format(working_dir, "work-obj08.cf")
+    new_lib_file_path = "{}/{}".format(working_dir, "{}-obj08.cf".format(lib_name))
     new_lib_file = ctx.actions.declare_file(new_lib_file_path)
     curr_src_lib_paths = new_lib_file.dirname.split(lib_name)
     work_dir = "{}{}".format(curr_src_lib_paths[0], lib_name)
 
     if old_cfg:
-        args.add("cp {} {}".format(old_cfg.path, new_lib_file.path))
-        args.add("&&")
-    args.add("cd {}".format(work_dir))
-    args.add("&&")
+        args.append("cp {} {}".format(old_cfg.path, new_lib_file.path))
+        args.append("&&")
+    args.append("cd {}".format(work_dir))
+    args.append("&&")
 
     return new_lib_file
 
@@ -137,10 +137,12 @@ def _ghdl_testbench_impl(ctx):
         lib_name = lib.split("/")[-1]
         flags = src_map[src]["flags"]
 
-        p_deps = []
+        p_deps = {}
         inputs = []
-        for lib in src_map[src]["unit_lib_deps"]:
-            p_deps.append(lib_cfg_map[lib])
+        for dep_lib in src_map[src]["unit_lib_deps"]:
+            # always use latest version
+            p_deps[dep_lib] = lib_cfg_map[dep_lib]
+
 
         if lib not in lib_cfg_map:
             lib_cfg_map[lib] = None
@@ -149,7 +151,7 @@ def _ghdl_testbench_impl(ctx):
         curr_lib_file = lib_cfg_map[lib]
 
         working_dir = "objs/{}/{}".format(src.basename.split(".")[0], lib_name)
-        args = ctx.actions.args()
+        args = [] #ctx.actions.args()
         new_lib_file = _prepare_cfg_file_content(
             ctx,
             args,
@@ -160,19 +162,24 @@ def _ghdl_testbench_impl(ctx):
 
         sym_src, out_o = _prepare_hdl_files(ctx, working_dir, src)
         inputs.append(sym_src)
-        args.add("ghdl")
-        args.add("-a")
-        args.add("--std=08")
-        args.add("--ieee=synopsys --warn-no-vital-generic")
-        args.add_all(flags)
-        args.add("--work=work")
-        args.add_all(p_deps, format_each="-P%s", map_each=get_dir)
-        args.add(src.path)
-        ctx.actions.run(
+        inputs.extend(p_deps.values())
+        args.append("ghdl")
+        args.append("-a")
+        args.append("--std=08")
+        args.append("--ieee=synopsys --warn-no-vital-generic")
+        args.extend(flags)
+        args.append("--work={}".format(lib_name))
+        #args.append_all(p_deps.values(), format_each="-P%s", map_each=get_dir)
+        for pdep in p_deps.values():
+          args.append("-P{}".format(get_dir(pdep)))
+        args.append("-P./")  # Include current lib
+        args.append(src.path)
+        ctx.actions.run_shell(
             mnemonic = "ghdlAnalysis",
-            executable = ghdl_tool.path,
-            tools = [ghdl_tool],
-            arguments = [args],
+            #executable = ghdl_tool.path,
+            #tools = [ghdl_tool],
+            #arguments = [args],
+            command = " ".join(args),
             inputs = inputs,
             outputs = [new_lib_file, out_o],
         )
@@ -210,7 +217,7 @@ def _ghdl_testbench_impl(ctx):
     test_bin = ctx.actions.declare_file("{}/{}".format(working_dir,ctx.attr.entity_name))
     curr_lib_file = lib_cfg_map[lib]
 
-    args = ctx.actions.args()
+    args = []#ctx.actions.args()
     new_lib_file = _prepare_cfg_file_content(
         ctx,
         args,
@@ -219,21 +226,24 @@ def _ghdl_testbench_impl(ctx):
         curr_lib_file,
     )
 
-    args.add("ghdl")
-    args.add("--elab-run")
-    args.add("-o {}".format(test_bin.basename))
-    args.add("--std=08")
-    args.add("--ieee=synopsys --warn-no-vital-generic")
-    args.add("--work=work")
-    args.add_all(lib_cfg_map.values(), format_each="-P%s", map_each=get_dir)
-    args.add(test_bin.basename)
-    args.add("--no-run")
+    args.append("ghdl")
+    args.append("--elab-run")
+    args.append("-o {}".format(test_bin.basename))
+    args.append("--std=08")
+    args.append("--ieee=synopsys --warn-no-vital-generic")
+    args.append("--work={}".format(lib_name))
+    #args.append_all(lib_cfg_map.values(), format_each="-P%s", map_each=get_dir)
+    for lib_cfg in lib_cfg_map.values():
+      args.append("-P{}".format(get_dir(lib_cfg)))
+    args.append(test_bin.basename)
+    args.append("--no-run")
 
-    ctx.actions.run(
+    ctx.actions.run_shell(
         mnemonic = "ghdlElaboration",
-        executable = ghdl_tool.path,
-        tools = [ghdl_tool],
-        arguments = [args],
+        #executable = ghdl_tool.path,
+        #tools = [ghdl_tool],
+        #arguments = [args],
+        command = " ".join(args),
         inputs = [curr_lib_file] + files_to_link + src_files + lib_cfg_map.values(),
         outputs = [new_lib_file, test_bin],
     )
