@@ -2,25 +2,6 @@
 
 set -e
 
-# regex explaination, we want to extract the output base
-# the output base usually ends with
-# _bazel_<user name>/<MD5 of workspace directory>
-output_base_path=$(readlink -f $(pwd) | \
-                   grep -Eow .*/_bazel_[^/]*/[0-9a-zA-Z]*)
-#repo_name=$(basename $(readlink -f $(pwd)))
-#root=$(dirname \
-#       $(readlink -f $output_base_path/execroot/$repo_name/WORKSPACE))
-
-#ghdl_args="$@"
-echo "$PWD"
-bash -c "$@"
-
-#docker run --rm -t \
-#  --user "$(id -u):$(id -g)" \
-#  --volume $output_base_path:$output_base_path \
-#  --workdir "$PWD" \
-#  ghdl/vunit:llvm-master sh -c "$ghdl_args"
-
-#"${ghdl_args[@]}"
+# ghdl invocationn
 
 exit $?
