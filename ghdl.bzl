@@ -163,7 +163,7 @@ def _ghdl_testbench_impl(ctx):
         sym_src, out_o = _prepare_hdl_files(ctx, working_dir, src)
         inputs.append(sym_src)
         inputs.extend(p_deps.values())
-        args.append("ghdl")
+        args.append("$(which ghdl)")
         args.append("-a")
         args.append("--std=08")
         args.append("--ieee=synopsys --warn-no-vital-generic")
@@ -226,7 +226,7 @@ def _ghdl_testbench_impl(ctx):
         curr_lib_file,
     )
 
-    args.append("ghdl")
+    args.append("$(which ghdl)")
     args.append("--elab-run")
     args.append("-o {}".format(test_bin.basename))
     args.append("--std=08")
