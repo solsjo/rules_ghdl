@@ -26,6 +26,9 @@ jobs:
     steps:
     - uses: actions/checkout@v2
     - uses: mishas/setup-bazelisk-action@v1
+    - uses: ghdl/setup-ghdl-ci@nightly
+      with:
+        backend: llvm
     - name: Mount bazel cache  # Optional
       uses: actions/cache@v1
       with:
