@@ -169,6 +169,7 @@ def _ghdl_testbench_impl(ctx):
             ctx.actions.symlink(output=lib_sym_src, target_file=comp_src)
             _lib_sym_srcs.append(lib_sym_src)
         inputs.extend(_lib_sym_srcs)
+        inputs.extend(comp_srcs)
         sym_src, out_o = _prepare_hdl_files(ctx, working_dir, src)
         inputs.append(sym_src)
         inputs.extend(p_deps.values())
@@ -200,7 +201,6 @@ def _ghdl_testbench_impl(ctx):
         # Save the output files, they will be needed later, in the
         # elaboration stage.
         compiled_output_files.append(out_o)
-        comp_srcs.append(sym_src)
         comp_srcs.append(src)
 
     working_dir = "bin/{}/{}".format(src.basename.split(".")[0], lib_name)
