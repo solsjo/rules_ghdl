@@ -210,17 +210,26 @@ def _ghdl_testbench_impl(ctx):
         # else create symlinks to library dir for that library in bin folder, as well as
         # the cf file and change -P to point there too?
         # Or create symlinks into the same lib base dir as where the srcs are stored in bin
-        o_file = compiled_output_files[i]
-        out_name = "{}/{}".format(working_dir, o_file.basename)
-        sym_o_file = ctx.actions.declare_file(out_name)
-        sym_o_files.append(sym_o_file)
-        ctx.actions.symlink(output=sym_o_file, target_file=o_file)
+        if src_map[src]["lib_name"] == lib:
+            o_file = compiled_output_files[i]
+            out_name = "{}/{}".format(working_dir, o_file.basename)
+            sym_o_file = ctx.actions.declare_file(out_name)
+            sym_o_files.append(sym_o_file)
+            ctx.actions.symlink(output=sym_o_file, target_file=o_file)
 
-        src = srcs[i]
-        _elaboration_sym_src_path = "{}/{}".format(working_dir, src.path)
-        elaboration_sym_src = ctx.actions.declare_file(_elaboration_sym_src_path)
-        ctx.actions.symlink(output=elaboration_sym_src, target_file=src)
-        _elaboration_sym_srcs.append(elaboration_sym_src)
+            src = srcs[i]
+            _elaboration_sym_src_path = "{}/{}".format(working_dir, src.path)
+            elaboration_sym_src = ctx.actions.declare_file(_elaboration_sym_src_path)
+            ctx.actions.symlink(output=elaboration_sym_src, target_file=src)
+            _elaboration_sym_srcs.append(elaboration_sym_src)
+        else:
+            src = srcs[i]
+            o_file = compiled_output_files[i]
+            out_name = "{}/{}".format(working_dir, lib.dirname + src.basename.split(".")[0] + ".o")
+            sym_o_file = ctx.actions.declare_file(out_name)
+            sym_o_files.append(sym_o_file)
+            ctx.actions.symlink(output=sym_o_file, target_file=o_file)
+       
 
     files_to_link = []
     files_to_link.extend(compiled_output_files)
