@@ -229,6 +229,7 @@ def _ghdl_testbench_impl(ctx):
             sym_o_file = ctx.actions.declare_file(out_name)
             sym_o_files.append(sym_o_file)
             ctx.actions.symlink(output=sym_o_file, target_file=o_file)
+            print(sym_o_file.path)
        
 
     files_to_link = []
