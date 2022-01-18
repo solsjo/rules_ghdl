@@ -181,7 +181,7 @@ def _ghdl_testbench_impl(ctx):
         args.append("--work={}".format(lib_name))
         #args.append_all(p_deps.values(), format_each="-P%s", map_each=get_dir)
         for pdep in p_deps.values():
-          args.append("-P{}".format(get_dir(pdep)))
+          args.append("-P../../../../../../../../{}".format(get_dir(pdep)))
         args.append("-P./")  # Include current lib
         args.append(src.path)
         ctx.actions.run_shell(
@@ -246,7 +246,7 @@ def _ghdl_testbench_impl(ctx):
     args.append("--work={}".format(lib_name))
     #args.append_all(lib_cfg_map.values(), format_each="-P%s", map_each=get_dir)
     for lib_cfg in lib_cfg_map.values():
-      args.append("-P{}".format(get_dir(lib_cfg)))
+      args.append("-P../../../../../../../../{}".format(get_dir(lib_cfg)))
     args.append(test_bin.basename)
     args.append("--no-run")
 
