@@ -208,9 +208,13 @@ def _ghdl_testbench_impl(ctx):
     for i in range(len(srcs)):
         o_file = compiled_output_files[i]
         out_name = "{}/{}".format(working_dir, o_file.basename)
+        print("o_file path=" + o_file.path)
+        print("o_file dirname=" + o_file.dirname)
         sym_o_file = ctx.actions.declare_file(out_name)
         sym_o_files.append(sym_o_file)
         ctx.actions.symlink(output=sym_o_file, target_file=o_file)
+        print("sym_path=" + sym_o_file.path)
+        print("sym_dirname=" + sym_o_file.dirname)
 
         src = srcs[i]
         _elaboration_sym_src_path = "{}/{}".format(working_dir, src.path)
