@@ -204,6 +204,7 @@ def _ghdl_testbench_impl(ctx):
         comp_srcs.append(src)
 
     working_dir = "bin/{}/{}".format(src.basename.split(".")[0], lib_name)
+    tb_file = src
     sym_cf_files = []
 
 
@@ -227,14 +228,16 @@ def _ghdl_testbench_impl(ctx):
         else:
             src = srcs[i]
             o_file = compiled_output_files[i]
-            out_name = "{}/{}".format(working_dir, lib_cfg_map[lib].dirname + "/" + src.basename.split(".")[0] + ".o")
+            lib_working_dir = "bin/{}/{}".format(tb_file.basename.split(".")[0], src_map[src]["lib_name"])
+            out_name = "{}/{}".format(lib_working_dir, src.basename.split(".")[0] + ".o")
             sym_o_file = ctx.actions.declare_file(out_name)
             sym_o_files.append(sym_o_file)
             ctx.actions.symlink(output=sym_o_file, target_file=o_file)
             print(sym_o_file.path)
 
     for name, t_dep in p_deps.items():
-        out_name = "{}/{}".format(working_dir, t_dep.path)
+        lib_working_dir = "bin/{}/{}".format(tb_file.basename.split(".")[0], name)
+        out_name = "{}/{}".format(working_dir, t_dep.basename)
         sym_cf_file = ctx.actions.declare_file(out_name)
         sym_cf_files.append(sym_cf_file)
         ctx.actions.symlink(output=sym_cf_file, target_file=t_dep)
