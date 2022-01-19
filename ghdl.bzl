@@ -236,6 +236,7 @@ def _ghdl_testbench_impl(ctx):
             print(sym_o_file.path)
 
     for name, t_dep in p_deps.items():
+        print("\nname={}:t_dep={}\n".format(name, t_dep))
         if name != lib:
             lib_working_dir = "bin/{}/{}".format(tb_file.basename.split(".")[0], name)
             out_name = "{}/{}".format(lib_working_dir, t_dep.basename)
@@ -275,8 +276,7 @@ def _ghdl_testbench_impl(ctx):
     #for lib_cfg in lib_cfg_map.values():
     #args.append("-P./")  # Include current lib
     for sym_cf in sym_cf_files:
-      args.append("-P../../../../../../../../{}".format(get_dir(sym_cf)))
-    args.append("-P../../../../../../../../{}".format(get_dir(new_lib_file)))
+      args.append("-P{}".format(get_dir(sym_cf)))
     args.append(test_bin.basename)
     args.append("--no-run")
 
