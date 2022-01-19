@@ -227,7 +227,7 @@ def _ghdl_testbench_impl(ctx):
         else:
             src = srcs[i]
             o_file = compiled_output_files[i]
-            out_name = "{}/{}".format(working_dir, lib.dirname + "/" + src.basename.split(".")[0] + ".o")
+            out_name = "{}/{}".format(working_dir, lib_cfg_map[lib].dirname + "/" + src.basename.split(".")[0] + ".o")
             sym_o_file = ctx.actions.declare_file(out_name)
             sym_o_files.append(sym_o_file)
             ctx.actions.symlink(output=sym_o_file, target_file=o_file)
@@ -267,8 +267,9 @@ def _ghdl_testbench_impl(ctx):
     args.append("--ieee=synopsys --warn-no-vital-generic")
     args.append("--work={}".format(lib_name))
     #args.append_all(lib_cfg_map.values(), format_each="-P%s", map_each=get_dir)
-    for lib_cfg in lib_cfg_map.values():
-      args.append("-P../../../../../../../../{}".format(get_dir(lib_cfg)))
+    #for lib_cfg in lib_cfg_map.values():
+    for sym_cf in sym_cf_files:
+      args.append("-P../../../../../../../../{}".format(get_dir(sym_cf)))
     args.append(test_bin.basename)
     args.append("--no-run")
 
@@ -279,7 +280,7 @@ def _ghdl_testbench_impl(ctx):
         #arguments = [args],
         use_default_shell_env = True,
         command = " ".join(args),
-        inputs = [curr_lib_file] + files_to_link + src_files + lib_cfg_map.values(),
+        inputs = [curr_lib_file] + files_to_link + src_files + lib_cfg_map.values(), sym_cf_files,
         outputs = [new_lib_file, test_bin],
     )
 
