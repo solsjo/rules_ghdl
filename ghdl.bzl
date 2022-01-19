@@ -280,7 +280,7 @@ def _ghdl_testbench_impl(ctx):
         #arguments = [args],
         use_default_shell_env = True,
         command = " ".join(args),
-        inputs = [curr_lib_file] + files_to_link + src_files + lib_cfg_map.values(), sym_cf_files,
+        inputs = [curr_lib_file] + files_to_link + src_files + lib_cfg_map.values() + sym_cf_files,
         outputs = [new_lib_file, test_bin],
     )
 
