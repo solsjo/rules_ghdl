@@ -243,9 +243,8 @@ def _ghdl_testbench_impl(ctx):
             sym_cf_files.append(sym_cf_file)
             ctx.actions.symlink(output=sym_cf_file, target_file=t_dep)
             print(sym_cf_file.path)
-        else:
-            sym_cf_files.append(lib_cfg_map[lib])
-
+            
+    print(sym_cf_files)
     files_to_link = []
     files_to_link.extend(compiled_output_files)
     files_to_link.extend(sym_o_files)
@@ -274,8 +273,10 @@ def _ghdl_testbench_impl(ctx):
     args.append("--work={}".format(lib_name))
     #args.append_all(lib_cfg_map.values(), format_each="-P%s", map_each=get_dir)
     #for lib_cfg in lib_cfg_map.values():
+    #args.append("-P./")  # Include current lib
     for sym_cf in sym_cf_files:
       args.append("-P../../../../../../../../{}".format(get_dir(sym_cf)))
+    args.append("-P../../../../../../../../{}".format(get_dir(new_lib_file)))
     args.append(test_bin.basename)
     args.append("--no-run")
 
