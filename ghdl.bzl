@@ -276,10 +276,11 @@ def _ghdl_testbench_impl(ctx):
     #for lib_cfg in lib_cfg_map.values():
     #args.append("-P./")  # Include current lib
     for sym_cf in sym_cf_files:
-      args.append("-P{}".format(get_dir(sym_cf)))
+      args.append("-P../../../../../../../../{}".format(get_dir(sym_cf)))
     args.append(test_bin.basename)
     args.append("--no-run")
 
+    print(args)
     ctx.actions.run_shell(
         mnemonic = "ghdlElaboration",
         #executable = ghdl_tool.path,
