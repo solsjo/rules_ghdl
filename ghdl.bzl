@@ -213,7 +213,7 @@ def _ghdl_testbench_impl(ctx):
         # else create symlinks to library dir for that library in bin folder, as well as
         # the cf file and change -P to point there too?
         # Or create symlinks into the same lib base dir as where the srcs are stored in bin
-        if src_map[src]["lib_name"] == lib:
+        if src_map[srcs[i]]["lib_name"] == lib:
             o_file = compiled_output_files[i]
             out_name = "{}/{}".format(working_dir, o_file.basename)
             sym_o_file = ctx.actions.declare_file(out_name)
@@ -229,11 +229,11 @@ def _ghdl_testbench_impl(ctx):
             src = srcs[i]
             o_file = compiled_output_files[i]
             lib_working_dir = "bin/{}/{}".format(tb_file.basename.split(".")[0], src_map[src]["lib_name"])
-            out_name = "{}/{}".format(lib_working_dir, src.basename.split(".")[0] + ".o")
+            out_name = "{}/{}".format(lib_working_dir, o_file.basename)
             sym_o_file = ctx.actions.declare_file(out_name)
             sym_o_files.append(sym_o_file)
             ctx.actions.symlink(output=sym_o_file, target_file=o_file)
-            print("--other_lib: {}\ncomp: {}\nfile: {}".format(lib, src_map[src]["lib_name"], sym_o_file.path))
+            print("\n--other_lib: {}\n--comp: {}\n--file: {}\n".format(lib, src_map[src]["lib_name"], sym_o_file.path))
 
     for name, t_dep in p_deps.items():
         print("\nname={}:t_dep={}\n".format(name, t_dep))
