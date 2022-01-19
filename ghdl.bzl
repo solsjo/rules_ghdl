@@ -219,6 +219,12 @@ def _ghdl_testbench_impl(ctx):
             sym_o_file = ctx.actions.declare_file(out_name)
             sym_o_files.append(sym_o_file)
             ctx.actions.symlink(output=sym_o_file, target_file=o_file)
+            
+            src = srcs[i]
+            _elaboration_sym_src_path = "{}/{}".format(working_dir, src.path)
+            elaboration_sym_src = ctx.actions.declare_file(_elaboration_sym_src_path)
+            ctx.actions.symlink(output=elaboration_sym_src, target_file=src)
+            _elaboration_sym_srcs.append(elaboration_sym_src)
         else:
             src = srcs[i]
             o_file = compiled_output_files[i]
@@ -228,11 +234,11 @@ def _ghdl_testbench_impl(ctx):
             sym_o_files.append(sym_o_file)
             ctx.actions.symlink(output=sym_o_file, target_file=o_file)
             print("\n--other_lib: {}\n--comp: {}\n--file: {}\n".format(lib, src_map[src]["lib_name"], sym_o_file.path))
-        src = srcs[i]
-        _elaboration_sym_src_path = "{}/{}".format(working_dir, src.path)
-        elaboration_sym_src = ctx.actions.declare_file(_elaboration_sym_src_path)
-        ctx.actions.symlink(output=elaboration_sym_src, target_file=src)
-        _elaboration_sym_srcs.append(elaboration_sym_src)
+            
+            _elaboration_sym_src_path = "{}/{}".format(lib_working_dir, src.path)
+            elaboration_sym_src = ctx.actions.declare_file(_elaboration_sym_src_path)
+            ctx.actions.symlink(output=elaboration_sym_src, target_file=src)
+            _elaboration_sym_srcs.append(elaboration_sym_src)
 
     for name, t_dep in p_deps.items():
         print("\nname={}:t_dep={}\n".format(name, t_dep))
