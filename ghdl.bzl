@@ -334,6 +334,9 @@ ghdl_library = rule(
 )
 
 # TODO: Should probably be renamed to ghdl_elaboration
+# "elab_flags" : attr.string_list(mandatory=False, allow_empty=True),
+# "generics" : attr.string_list(mandatory=False, allow_empty=True), # Should be dict
+
 ghdl_testbench = rule(
     implementation = _ghdl_testbench_impl,
     attrs = {
@@ -341,8 +344,6 @@ ghdl_testbench = rule(
         # TODO: Remove sources from testbench rule
         "srcs": attr.label(allow_single_file = [".vhd", ".v"], mandatory = True),
         "deps": attr.label_list(),
-        #"elab_flags" : attr.string_list(mandatory=False, allow_empty=True),
-        #"generics" : attr.string_list(mandatory=False, allow_empty=True), # Should be dict
     },
     toolchains = ["@rules_ghdl//:ghdl_toolchain_type"]
 )
