@@ -233,7 +233,7 @@ def _ghdl_testbench_impl(ctx):
             sym_o_file = ctx.actions.declare_file(out_name)
             sym_o_files.append(sym_o_file)
             ctx.actions.symlink(output=sym_o_file, target_file=o_file)
-            print("--other_lib: {}\nfile:{}".format(lib, sym_o_file.path))
+            print("--other_lib: {}\ncomp: {}\nfile: {}".format(lib, src_map[src]["lib_name"], sym_o_file.path))
 
     for name, t_dep in p_deps.items():
         print("\nname={}:t_dep={}\n".format(name, t_dep))
