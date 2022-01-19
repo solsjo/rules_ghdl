@@ -204,6 +204,8 @@ def _ghdl_testbench_impl(ctx):
         comp_srcs.append(src)
 
     working_dir = "bin/{}/{}".format(src.basename.split(".")[0], lib_name)
+    sym_cf_files = []
+
 
     for i in range(len(srcs)):
         # Check if src file belongs to current lib, if so, create symlinks in current dir,
@@ -225,12 +227,18 @@ def _ghdl_testbench_impl(ctx):
         else:
             src = srcs[i]
             o_file = compiled_output_files[i]
-            out_name = "{}/{}".format(working_dir, lib.dirname + src.basename.split(".")[0] + ".o")
+            out_name = "{}/{}".format(working_dir, lib.dirname + "/" + src.basename.split(".")[0] + ".o")
             sym_o_file = ctx.actions.declare_file(out_name)
             sym_o_files.append(sym_o_file)
             ctx.actions.symlink(output=sym_o_file, target_file=o_file)
             print(sym_o_file.path)
-       
+
+    for name, t_dep in pdeps.items():
+        out_name = "{}/{}".format(working_dir, tdep.path)
+        sym_o_file = ctx.actions.declare_file(out_name)
+        sym_o_files.append(sym_o_file)
+        ctx.actions.symlink(output=sym_o_file, target_file=tdep)
+        print(sym_o_file.path)
 
     files_to_link = []
     files_to_link.extend(compiled_output_files)
