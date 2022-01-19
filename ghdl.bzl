@@ -273,7 +273,7 @@ def _ghdl_testbench_impl(ctx):
 
     elab = "--elab"
     add_no_run = False
-    if ctx.attr.flags or ctx.attr.generics:
+    if ctx.attr.elab_flags or ctx.attr.generics:
         elab = "--elab-run"
         add_no_run = True
         
