@@ -236,12 +236,15 @@ def _ghdl_testbench_impl(ctx):
             print(sym_o_file.path)
 
     for name, t_dep in p_deps.items():
-        lib_working_dir = "bin/{}/{}".format(tb_file.basename.split(".")[0], name)
-        out_name = "{}/{}".format(working_dir, t_dep.basename)
-        sym_cf_file = ctx.actions.declare_file(out_name)
-        sym_cf_files.append(sym_cf_file)
-        ctx.actions.symlink(output=sym_cf_file, target_file=t_dep)
-        print(sym_cf_file.path)
+        if name != lib:
+            lib_working_dir = "bin/{}/{}".format(tb_file.basename.split(".")[0], name)
+            out_name = "{}/{}".format(lib_working_dir, t_dep.basename)
+            sym_cf_file = ctx.actions.declare_file(out_name)
+            sym_cf_files.append(sym_cf_file)
+            ctx.actions.symlink(output=sym_cf_file, target_file=t_dep)
+            print(sym_cf_file.path)
+        else:
+            sym_cf_files.append(lib_cfg_map[lib])
 
     files_to_link = []
     files_to_link.extend(compiled_output_files)
