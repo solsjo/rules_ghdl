@@ -233,12 +233,12 @@ def _ghdl_testbench_impl(ctx):
             ctx.actions.symlink(output=sym_o_file, target_file=o_file)
             print(sym_o_file.path)
 
-    for name, t_dep in pdeps.items():
-        out_name = "{}/{}".format(working_dir, tdep.path)
-        sym_o_file = ctx.actions.declare_file(out_name)
-        sym_o_files.append(sym_o_file)
-        ctx.actions.symlink(output=sym_o_file, target_file=tdep)
-        print(sym_o_file.path)
+    for name, t_dep in p_deps.items():
+        out_name = "{}/{}".format(working_dir, t_dep.path)
+        sym_cf_file = ctx.actions.declare_file(out_name)
+        sym_cf_files.append(sym_cf_file)
+        ctx.actions.symlink(output=sym_cf_file, target_file=t_dep)
+        print(sym_cf_file.path)
 
     files_to_link = []
     files_to_link.extend(compiled_output_files)
