@@ -272,10 +272,10 @@ def _ghdl_testbench_impl(ctx):
     )
 
     elab = "--elab"
-    add_no_run = False
-    if ctx.attr.elab_flags or ctx.attr.generics:
-        elab = "--elab-run"
-        add_no_run = True
+    #add_no_run = False
+    #if ctx.attr.elab_flags or ctx.attr.generics:
+    elab = "--elab-run"
+    #add_no_run = True
         
 
     args.append("ghdl")
@@ -290,10 +290,10 @@ def _ghdl_testbench_impl(ctx):
     for sym_cf in sym_cf_files:
       args.append("-P../../../../../../../../{}".format(get_dir(sym_cf)))
     args.append(test_bin.basename)
-    for generic in ctx.attr.generics:
-      args.append(generic)
-    if add_no_run:
-        args.append("--no-run")
+    #for generic in ctx.attr.generics:
+    #  args.append(generic)
+    #if add_no_run:
+    args.append("--no-run")
 
     print(args)
     ctx.actions.run_shell(
@@ -341,8 +341,8 @@ ghdl_testbench = rule(
         # TODO: Remove sources from testbench rule
         "srcs": attr.label(allow_single_file = [".vhd", ".v"], mandatory = True),
         "deps": attr.label_list(),
-        "elab_flags" : attr.string_list(mandatory=False, allow_empty=True),
-        "generics" : attr.string_list(mandatory=False, allow_empty=True), # Should be dict
+        #"elab_flags" : attr.string_list(mandatory=False, allow_empty=True),
+        #"generics" : attr.string_list(mandatory=False, allow_empty=True), # Should be dict
     },
     toolchains = ["@rules_ghdl//:ghdl_toolchain_type"]
 )
