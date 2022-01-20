@@ -241,16 +241,14 @@ def _ghdl_testbench_impl(ctx):
             _elaboration_sym_srcs.append(elaboration_sym_src)
 
     for name, t_dep in p_deps.items():
-        print("\nname={}:t_dep={}\n".format(name, t_dep))
+        
         if name != lib:
             lib_working_dir = "bin/{}/{}".format(tb_file.basename.split(".")[0], name)
             out_name = "{}/{}".format(lib_working_dir, t_dep.basename)
             sym_cf_file = ctx.actions.declare_file(out_name)
             sym_cf_files.append(sym_cf_file)
             ctx.actions.symlink(output=sym_cf_file, target_file=t_dep)
-            print(sym_cf_file.path)
-            
-    print(sym_cf_files)
+
     files_to_link = []
     files_to_link.extend(compiled_output_files)
     files_to_link.extend(sym_o_files)
@@ -295,7 +293,6 @@ def _ghdl_testbench_impl(ctx):
     if add_no_run:
       args.append("--no-run")
 
-    print(args)
     ctx.actions.run_shell(
         mnemonic = "ghdlElaboration",
         #executable = ghdl_tool.path,
