@@ -1,1 +1,1 @@
-USE_BAZEL_VERSION= last_downstream_green
+USE_BAZEL_VERSION=4.2.2
