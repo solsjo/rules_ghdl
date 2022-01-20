@@ -101,7 +101,7 @@ def _ghdl_units_impl(ctx):
             }
 
     return [
-        DefaultInfo(files = trans_srcs),
+        DefaultInfo(files = depset(trans_srcs)),
         GHDLFiles(transitive_sources=trans_srcs, lib_name=lib_id, src_map=src_map)
     ]
 
@@ -308,7 +308,7 @@ def _ghdl_testbench_impl(ctx):
     )
 
     return [
-        DefaultInfo(files = [test_bin]),
+        DefaultInfo(files = depset([test_bin])),
         GHDLFiles(transitive_sources=trans_srcs, outs=[test_bin])
     ]
 
