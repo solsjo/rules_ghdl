@@ -34,4 +34,4 @@ jobs:
       with:
         path: "~/.cache/bazel"
         key: bazel
-    - run: ./test/test_documentation.sh && bazelisk build //...
+    - run: ./test/test_documentation.sh
