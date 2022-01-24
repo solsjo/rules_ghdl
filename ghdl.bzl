@@ -259,6 +259,9 @@ def _ghdl_testbench_impl(ctx):
     test_bin_name = ctx.attr.entity_name
     if ctx.attr.arch:
         test_bin_name += "-{}".format(ctx.attr.arch)
+
+    print(ctx.attr.arch)
+    print(test_bin_name)
     test_bin = ctx.actions.declare_file("{}/{}".format(working_dir, test_bin_name))
     curr_lib_file = lib_cfg_map[lib]
 
