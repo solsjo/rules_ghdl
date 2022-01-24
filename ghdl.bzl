@@ -256,7 +256,10 @@ def _ghdl_testbench_impl(ctx):
     src_files.extend(srcs)
     src_files.extend(_elaboration_sym_srcs)
 
-    test_bin = ctx.actions.declare_file("{}/{}".format(working_dir,ctx.attr.entity_name))
+    test_bin_name = ctx.attr.entity_name
+    if ctx.attr.arch:
+        test_bin_name += "-{}".format(ctx.attr.arch)
+    test_bin = ctx.actions.declare_file("{}/{}".format(working_dir, test_bin_name))
     curr_lib_file = lib_cfg_map[lib]
 
     args = []#ctx.actions.args()
@@ -277,7 +280,7 @@ def _ghdl_testbench_impl(ctx):
 
     args.append("ghdl")
     args.append(elab)
-    args.append("-o {}".format(test_bin.basename))
+    args.append("-o {}".format(test_bin_name))
     args.append("--std=08")
     args.append("--ieee=synopsys --warn-no-vital-generic")
     args.append("--work={}".format(lib_name))
@@ -286,7 +289,9 @@ def _ghdl_testbench_impl(ctx):
     #args.append("-P./")  # Include current lib
     for sym_cf in sym_cf_files:
       args.append("-P../../../../../../../../{}".format(get_dir(sym_cf)))
-    args.append(test_bin.basename)
+    args.append(ctx.attr.entity_name)
+    if ctx.attr.arch:
+        args.append(ctx.attr.arch)
     for generic in ctx.attr.generics:
       args.append(generic)
     if add_no_run:
@@ -334,6 +339,7 @@ ghdl_testbench = rule(
     implementation = _ghdl_testbench_impl,
     attrs = {
         "entity_name": attr.string(mandatory=True),
+        "arch": attr.string(mandatory=False),
         # TODO: Remove sources from testbench rule
         "srcs": attr.label(allow_single_file = [".vhd", ".v"], mandatory = True),
         "deps": attr.label_list(),
