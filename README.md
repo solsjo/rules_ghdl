@@ -1,4 +1,4 @@
-# bazel rules for GHDL
+# Bazel rules for GHDL
 
 The rules are currently only tested on linux and most probably doesn't
 work on windows, there is also no toolchain set up for windows.

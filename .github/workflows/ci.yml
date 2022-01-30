@@ -1,6 +1,6 @@
 # This is a basic workflow to help you get started with Actions
 
-name: CI
+name: ci
 
 # Controls when the workflow will run
 on:
@@ -26,9 +26,16 @@ jobs:
     steps:
     - uses: actions/checkout@v2
     - uses: mishas/setup-bazelisk-action@v1
+    - uses: ghdl/setup-ghdl-ci@nightly
+      with:
+        backend: llvm
     - name: Mount bazel cache  # Optional
       uses: actions/cache@v1
       with:
         path: "~/.cache/bazel"
         key: bazel
-    - run: ./test/test_documentation.sh && bazelisk build //...
+    - name: Install gnat
+      run: sudo apt-get install -y gnat
+    - name: Install llvm
+      run: sudo apt-get install -y llvm
+    - run: ./test/test_documentation.sh
