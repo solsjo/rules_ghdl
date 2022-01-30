@@ -1,23 +1,39 @@
-#!/bin/sh
+#!/bin/bash
 
 set -e
 
-# regex explaination, we want to extract the output base
-# the output base usually ends with
-# _bazel_<user name>/<MD5 of workspace directory>
-output_base_path=$(readlink -f $(pwd) | \
-                   grep -Eow .*/_bazel_[^/]*/[0-9a-zA-Z]*)
-repo_name=$(basename $(readlink -f $(pwd)))
-root=$(dirname \
-       $(readlink -f $output_base_path/execroot/$repo_name/WORKSPACE))
+old_lib_file=${1}
+new_lib_file=${2}
+work_dir=${3}
+ghdl_bin=${4}
+shift 4
 
-ghdl_args="$@"
+readarray -td, ghdl_args <<<"$@"
 
-docker run --rm -t \
-  --user "$(id -u):$(id -g)" \
-  --volume $output_base_path:$output_base_path \
-  --volume "$root":"$root" \
-  --workdir "$PWD" \
-  ghdl/vunit:llvm-master sh -c "$ghdl_args"
+if [ -n "$old_lib_file" ]; then
+  cp "$old_lib_file" "$new_lib_file"
+fi
+
+cd "$work_dir"
+
+if [ -n "$DOCKER_IMAGE" ]; then
+  # regex explaination, we want to extract the output base
+  # the output base usually ends with
+  # _bazel_<user name>/<MD5 of workspace directory>
+  output_base_path=$(readlink -f $(pwd) | \
+    grep -Eow .*/_bazel_[^/]*/[0-9a-zA-Z]*)
+
+  docker run --rm -t \
+    --user "$(id -u):$(id -g)" \
+    --volume $output_base_path:$output_base_path \
+    --workdir "$PWD" \
+    "$DOCKER_IMAGE" sh -c "$ghdl_bin $ghdl_args"
+else
+
+  export GHDL_PREFIX="$(dirname $(realpath $ghdl_bin))/../lib/ghdl"
+
+  "$ghdl_bin" ${ghdl_args[@]}
+
+fi
 
 exit $?
