@@ -23,6 +23,7 @@ ghdl_units(
 ghdl_testbench(
     name = "ghdl_example_tb",
     entity_name = "counter_tb",
+    arch = "testbench",
     srcs = ":testbench/counter_tb.vhd",
     deps = [":counter_tb"]
 )
