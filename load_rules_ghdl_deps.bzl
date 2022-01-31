@@ -2,7 +2,7 @@
 
 load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
 
-def rules_ghdl_deps():
+def load_rules_ghdl_deps():
     """Loads common dependencies needed to compile a ghdl binary."""
 
     if not native.existing_rule("bazel_skylib"):
