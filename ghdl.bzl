@@ -183,12 +183,8 @@ def _ghdl_testbench_impl(ctx):
         args.append("--work={}".format(lib_name))
         #args.append_all(p_deps.values(), format_each="-P%s", map_each=get_dir)
         for pdep in p_deps.values():
-          print("====:pdep:" + str(pdep) + ":: owner: " + str(pdep.owner.workspace_root) + "::path:" + str(pdep.path))
           length = len(new_lib_file.dirname.split('/'))
-          print("length: " + str(length) + " example: " + str("../" * length))
-          print("relative_path:: => " + str(paths.relativize(pdep.path, "bazel-out")))
-          print("-P../../../../../../{}".format(get_dir(pdep)))
-          args.append("-P../../../../../../{}".format(get_dir(pdep)))
+          args.append("-P{}{}".format( "../" * length, get_dir(pdep)))
         args.append("-P./")  # Include current lib
         args.append(src.path)
         ctx.actions.run_shell(
@@ -296,7 +292,8 @@ def _ghdl_testbench_impl(ctx):
     #for lib_cfg in lib_cfg_map.values():
     #args.append("-P./")  # Include current lib
     for sym_cf in sym_cf_files:
-      args.append("-P../../../../../../{}".format(get_dir(sym_cf)))
+        length = len(new_lib_file.dirname.split('/'))
+        args.append("-P{}{}".format( "../" * length, get_dir(sym_cf)))
     args.append(ctx.attr.entity_name)
     if ctx.attr.arch:
         args.append(ctx.attr.arch)
