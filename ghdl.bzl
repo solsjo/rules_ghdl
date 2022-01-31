@@ -184,7 +184,7 @@ def _ghdl_testbench_impl(ctx):
         #args.append_all(p_deps.values(), format_each="-P%s", map_each=get_dir)
         for pdep in p_deps.values():
           print("====:pdep:" + str(pdep) + ":: owner: " + str(pdep.owner.workspace_root) + "::path:" + str(pdep.path))
-          print("relative_path:: => " + str(paths.relativize(pdep.path, new_lib_file)))
+          print("relative_path:: => " + str(paths.relativize(pdep.path, new_lib_file.path)))
           args.append("-P../../../../../../{}".format(get_dir(pdep)))
         args.append("-P./")  # Include current lib
         args.append(src.path)
