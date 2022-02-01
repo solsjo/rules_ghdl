@@ -37,10 +37,10 @@ def _prepare_cfg_file_content(ctx, args, working_dir, lib_name, old_cfg):
     work_dir = "{}{}".format(curr_src_lib_paths[0], lib_name)
 
     if old_cfg:
-        args.append("cp {} {}".format(old_cfg.path, new_lib_file.path))
-        args.append("&&")
-    args.append("cd {}".format(work_dir))
-    args.append("&&")
+        args.add("cp {} {}".format(old_cfg.path, new_lib_file.path))
+        args.add("&&")
+    args.add("cd {}".format(work_dir))
+    args.add("&&")
 
     return new_lib_file
 
@@ -111,6 +111,7 @@ def _ghdl_units_impl(ctx):
 def _ghdl_testbench_impl(ctx):
     info = ctx.toolchains["@rules_ghdl//:ghdl_toolchain_type"].ghdlinfo
     ghdl_tool = info.compiler_path.files.to_list()[0]
+    docker = info.docker;
 
     trans_srcs = get_transitive_srcs(
         ctx.files.srcs,
@@ -155,7 +156,7 @@ def _ghdl_testbench_impl(ctx):
         curr_lib_file = lib_cfg_map[lib]
 
         working_dir = "objs/{}/{}".format(src.basename.split(".")[0], lib_name)
-        args = [] #ctx.actions.args()
+        args = ctx.actions.args()
         new_lib_file = _prepare_cfg_file_content(
             ctx,
             args,
@@ -163,7 +164,7 @@ def _ghdl_testbench_impl(ctx):
             lib_name,
             curr_lib_file,
         )
-
+        length = len(new_lib_file.dirname.split('/'))
         for i in range(len(comp_srcs)):
             comp_src = comp_srcs[i]
             _lib_sym_src_path = "{}/{}".format(working_dir, comp_src.path)
@@ -175,25 +176,21 @@ def _ghdl_testbench_impl(ctx):
         sym_src, out_o = _prepare_hdl_files(ctx, working_dir, src)
         inputs.append(sym_src)
         inputs.extend(p_deps.values())
-        args.append("ghdl")
-        args.append("-a")
-        args.append("--std=08")
-        args.append("--ieee=synopsys --warn-no-vital-generic")
-        args.extend(flags)
-        args.append("--work={}".format(lib_name))
-        #args.append_all(p_deps.values(), format_each="-P%s", map_each=get_dir)
-        for pdep in p_deps.values():
-          length = len(new_lib_file.dirname.split('/'))
-          args.append("-P{}{}".format( "../" * length, get_dir(pdep)))
-        args.append("-P./")  # Include current lib
-        args.append(src.path)
-        ctx.actions.run_shell(
+        args.add("ghdl")
+        args.add("-a")
+        args.add("--std=08")
+        args.add("--ieee=synopsys --warn-no-vital-generic")
+        args.add_all(flags)
+        args.add("--work={}".format(lib_name))
+        args.add_all(p_deps.values(), format_each="-P" +  "../" * length + "%s", map_each=get_dir)
+        args.add("-P./")  # Include current lib
+        args.add(src.path)
+        ctx.actions.run(
             mnemonic = "ghdlAnalysis",
-            #executable = ghdl_tool.path,
-            #tools = [ghdl_tool],
-            #arguments = [args],
-            use_default_shell_env = True,
-            command = " ".join(args),
+            executable = ghdl_tool.path,
+            tools = [ghdl_tool],
+            arguments = [args],
+            env = {"DOCKER_IMAGE": docker}
             inputs = inputs,
             outputs = [new_lib_file, out_o],
         )
@@ -266,7 +263,7 @@ def _ghdl_testbench_impl(ctx):
     test_bin = ctx.actions.declare_file("{}/{}".format(working_dir, test_bin_name))
     curr_lib_file = lib_cfg_map[lib]
 
-    args = []#ctx.actions.args()
+    args = ctx.actions.args()
     new_lib_file = _prepare_cfg_file_content(
         ctx,
         args,
@@ -281,34 +278,29 @@ def _ghdl_testbench_impl(ctx):
         elab = "--elab-run"
         add_no_run = True
         
+    length = len(new_lib_file.dirname.split('/'))
+    args.add("ghdl")
+    args.add(elab)
+    args.add("-o {}".format(test_bin_name))
+    args.add("--std=08")
+    args.add("--ieee=synopsys --warn-no-vital-generic")
+    args.add("--work={}".format(lib_name))
+    args.add_all(sym_cf_files, format_each="-P" + "../" * length + "%s", map_each=get_dir)
 
-    args.append("ghdl")
-    args.append(elab)
-    args.append("-o {}".format(test_bin_name))
-    args.append("--std=08")
-    args.append("--ieee=synopsys --warn-no-vital-generic")
-    args.append("--work={}".format(lib_name))
-    #args.append_all(lib_cfg_map.values(), format_each="-P%s", map_each=get_dir)
-    #for lib_cfg in lib_cfg_map.values():
-    #args.append("-P./")  # Include current lib
-    for sym_cf in sym_cf_files:
-        length = len(new_lib_file.dirname.split('/'))
-        args.append("-P{}{}".format( "../" * length, get_dir(sym_cf)))
-    args.append(ctx.attr.entity_name)
+    args.add(ctx.attr.entity_name)
     if ctx.attr.arch:
-        args.append(ctx.attr.arch)
+        args.add(ctx.attr.arch)
     for generic in ctx.attr.generics:
-      args.append(generic)
+      args.add(generic)
     if add_no_run:
-      args.append("--no-run")
+      args.add("--no-run")
 
-    ctx.actions.run_shell(
+    ctx.actions.run(
         mnemonic = "ghdlElaboration",
-        #executable = ghdl_tool.path,
-        #tools = [ghdl_tool],
-        #arguments = [args],
-        use_default_shell_env = True,
-        command = " ".join(args),
+        executable = ghdl_tool.path,
+        tools = [ghdl_tool],
+        arguments = [args],
+        env = {"DOCKER_IMAGE": docker}
         inputs = [curr_lib_file] + files_to_link + src_files + lib_cfg_map.values() + sym_cf_files,
         outputs = [new_lib_file, test_bin],
     )
