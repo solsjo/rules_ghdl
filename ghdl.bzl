@@ -1,3 +1,5 @@
+load("@bazel_skylib//lib:paths.bzl", "paths")
+
 GHDLFiles = provider(
     fields = [
         "transitive_sources",
@@ -181,7 +183,8 @@ def _ghdl_testbench_impl(ctx):
         args.append("--work={}".format(lib_name))
         #args.append_all(p_deps.values(), format_each="-P%s", map_each=get_dir)
         for pdep in p_deps.values():
-          args.append("-P../../../../../../../../{}".format(get_dir(pdep)))
+          length = len(new_lib_file.dirname.split('/'))
+          args.append("-P{}{}".format( "../" * length, get_dir(pdep)))
         args.append("-P./")  # Include current lib
         args.append(src.path)
         ctx.actions.run_shell(
@@ -260,8 +263,6 @@ def _ghdl_testbench_impl(ctx):
     if ctx.attr.arch:
         test_bin_name += "-{}".format(ctx.attr.arch)
 
-    print(ctx.attr.arch)
-    print(test_bin_name)
     test_bin = ctx.actions.declare_file("{}/{}".format(working_dir, test_bin_name))
     curr_lib_file = lib_cfg_map[lib]
 
@@ -291,7 +292,8 @@ def _ghdl_testbench_impl(ctx):
     #for lib_cfg in lib_cfg_map.values():
     #args.append("-P./")  # Include current lib
     for sym_cf in sym_cf_files:
-      args.append("-P../../../../../../../../{}".format(get_dir(sym_cf)))
+        length = len(new_lib_file.dirname.split('/'))
+        args.append("-P{}{}".format( "../" * length, get_dir(sym_cf)))
     args.append(ctx.attr.entity_name)
     if ctx.attr.arch:
         args.append(ctx.attr.arch)
