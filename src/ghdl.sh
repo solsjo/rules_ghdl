@@ -30,7 +30,7 @@ echo "hello4 ${cmd_arr}"
 
 echo "hello2 ${cmd_arr[@]}"
 echo "pwd: $PWD"
-$ghdl_args
+$(ghdl_args)
 fi
 
 exit $?
