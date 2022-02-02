@@ -18,7 +18,7 @@ docker run --rm -t \
   "$DOCKER_IMAGE" sh -c "$ghdl_args"
 else
 echo "$ghdl_args"
-readarray -td, args <<<"$string,"; unset 'a[-1]'; declare -p args;
+readarray -td, args <<<"$ghdl_args,"; unset 'a[-1]'; declare -p args;
 echo "$args"
 echo "${args[@]}"
 "${args[@]}"
