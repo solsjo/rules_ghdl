@@ -18,7 +18,7 @@ docker run --rm -t \
   "$DOCKER_IMAGE" sh -c "$ghdl_args"
 else
 echo "$ghdl_args"
-$ghdl_args
+"${ghdl_args[@]}"
 fi
 
 exit $?
