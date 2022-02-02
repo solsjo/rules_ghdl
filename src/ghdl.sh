@@ -2,6 +2,10 @@
 
 set -e
 
+
+read -a cmd_arr <<< $@
+echo "firstr: $cmd_arr"
+echo "hello3 ${cmd_arr[@]}"
 ghdl_args="$@"
 
 if [ -n "$DOCKER_IMAGE" ]; then
@@ -18,7 +22,7 @@ docker run --rm -t \
   "$DOCKER_IMAGE" sh -c "$ghdl_args"
 else
 echo "first $ghdl_args"
-cmd_arr=("$ghdl_args")
+
 echo "hello $cmd_arr"
 echo "hello2 ${cmd_arr[@]}"
 "${cmd_arr[@]}"
