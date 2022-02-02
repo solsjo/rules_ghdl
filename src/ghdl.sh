@@ -25,7 +25,11 @@ else
 echo "first $ghdl_args"
 
 echo "hello $cmd_arr"
-#echo "hello2 ${cmd_arr[@]}"
+
+echo "hello4 ${cmd_arr}"
+
+echo "hello2 ${cmd_arr[@]}"
+echo "pwd: $PWD"
 "${cmd_arr}"
 fi
 
