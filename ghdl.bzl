@@ -190,7 +190,7 @@ def _ghdl_testbench_impl(ctx):
             executable = ghdl_tool.path,
             tools = [ghdl_tool],
             arguments = [args],
-            env = {"DOCKER_IMAGE": docker}
+            env = {"DOCKER_IMAGE": docker},
             inputs = inputs,
             outputs = [new_lib_file, out_o],
         )
@@ -300,7 +300,7 @@ def _ghdl_testbench_impl(ctx):
         executable = ghdl_tool.path,
         tools = [ghdl_tool],
         arguments = [args],
-        env = {"DOCKER_IMAGE": docker}
+        env = {"DOCKER_IMAGE": docker},
         inputs = [curr_lib_file] + files_to_link + src_files + lib_cfg_map.values() + sym_cf_files,
         outputs = [new_lib_file, test_bin],
     )
