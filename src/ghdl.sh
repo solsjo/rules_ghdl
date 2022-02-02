@@ -25,7 +25,7 @@ echo "first $ghdl_args"
 
 echo "hello $cmd_arr"
 echo "hello2 ${cmd_arr[@]}"
-"${cmd_arr[@]}"
+"${cmd_arr}"
 fi
 
 exit $?
