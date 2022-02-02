@@ -18,7 +18,7 @@ docker run --rm -t \
   "$DOCKER_IMAGE" sh -c "$ghdl_args"
 else
 echo "first $ghdl_args"
-read -a cmd_arr <<< $ghdl_args
+cmd_arr=($ghdl_args)
 echo "hello $cmd_arr"
 echo "hello2 ${cmd_arr[@]}"
 "${cmd_arr[@]}"
