@@ -17,11 +17,11 @@ docker run --rm -t \
   --workdir "$PWD" \
   "$DOCKER_IMAGE" sh -c "$ghdl_args"
 else
-echo "$ghdl_args"
-readarray -td, args <<<"$ghdl_args,"; unset 'a[-1]'; declare -p args;
-echo "$args"
-echo "${args[@]}"
-"${args[@]}"
+echo "first $ghdl_args"
+read -a cmd_arr <<< $ghdl_args
+echo "hello $cmd_arr"
+echo "hello2 ${cmd_arr[@]}"
+"${cmd_arr[@]}"
 fi
 
 exit $?
