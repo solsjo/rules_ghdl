@@ -17,6 +17,7 @@ docker run --rm -t \
   --workdir "$PWD" \
   "$DOCKER_IMAGE" sh -c "$ghdl_args"
 else
+echo "$ghdl_args"
 $ghdl_args
 fi
 
