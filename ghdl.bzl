@@ -190,7 +190,7 @@ def _ghdl_testbench_impl(ctx):
             executable = ghdl_tool.path,
             tools = [ghdl_tool],
             arguments = [args],
-            env = {"DOCKER_IMAGE": docker},
+            env = {"DOCKER_IMAGE": docker, "HOME": "/"},
             inputs = inputs,
             outputs = [new_lib_file, out_o],
         )
