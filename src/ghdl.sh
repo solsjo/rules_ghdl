@@ -2,6 +2,7 @@
 
 set -e
 
+lsb_release -a
 
 read -a cmd_arr <<< $@
 echo "firstr: $cmd_arr"
