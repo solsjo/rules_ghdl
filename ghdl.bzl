@@ -112,7 +112,7 @@ def _ghdl_testbench_impl(ctx):
     info = ctx.toolchains["@rules_ghdl//:ghdl_toolchain_type"].ghdlinfo
     ghdl_tool = info.wrapper.files.to_list()[0]
     docker = info.docker;
-    ghdl_compiler = info.compiler.files.to_list()[0]
+    ghdl_compiler = info.compiler_path.files.to_list()[0]
     ghdl_compiler_deps = info.compiler_deps;
 
     trans_srcs = get_transitive_srcs(
