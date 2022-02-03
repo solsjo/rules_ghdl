@@ -6,6 +6,6 @@ filegroup(
 
 filegroup(
     name = "ghdl_bin",
-    srcs = ":bin/ghdl",
+    srcs = [":bin/ghdl"],
     visibility = ["//visibility:public"],
 )
