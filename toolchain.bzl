@@ -19,7 +19,7 @@ ghdl_toolchain = rule(
     attrs = {
         "compiler_path": attr.label(default="@ghdl_toolchain//:ghdl_bin"),
         "docker": attr.string(),
-        "wrapper": attr.label(default="@ghdl_rules//src:default_ghdl"),
+        "wrapper": attr.label(default="@rules_ghdl//src:default_ghdl"),
         "compiler_deps": attr.label(default="@ghdl_toolchain//:ghdl_deps")
     },
 )
