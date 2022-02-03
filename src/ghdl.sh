@@ -30,6 +30,8 @@ echo "hello4 ${cmd_arr}"
 
 echo "hello2 ${cmd_arr[@]}"
 echo "pwd: $PWD"
+ls -a
+ls -a ./external/ghdl_toolchain/bin
 #${cmd_arr}
 
 sh -c "$ghdl_args"
