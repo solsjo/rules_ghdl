@@ -110,8 +110,10 @@ def _ghdl_units_impl(ctx):
 
 def _ghdl_testbench_impl(ctx):
     info = ctx.toolchains["@rules_ghdl//:ghdl_toolchain_type"].ghdlinfo
-    ghdl_tool = info.compiler_path.files.to_list()[0]
+    ghdl_tool = info.wrapper.files.to_list()[0]
     docker = info.docker;
+    ghdl_compiler = info.compiler.files.to_list()[0]
+    ghdl_compilier_deps = info.compiler_deps;
 
     trans_srcs = get_transitive_srcs(
         ctx.files.srcs,
@@ -176,7 +178,7 @@ def _ghdl_testbench_impl(ctx):
         sym_src, out_o = _prepare_hdl_files(ctx, working_dir, src)
         inputs.append(sym_src)
         inputs.extend(p_deps.values())
-        args.add("ghdl")
+        args.add("{}".format(ghdl_compiler.path))
         args.add("-a")
         args.add("--std=08")
         args.add("--ieee=synopsys --warn-no-vital-generic")
@@ -188,7 +190,7 @@ def _ghdl_testbench_impl(ctx):
         ctx.actions.run(
             mnemonic = "ghdlAnalysis",
             executable = ghdl_tool.path,
-            tools = [ghdl_tool],
+            tools = [ghdl_tool, ghdl_compiler, ghdl_compiler_deps],
             arguments = [args],
             env = {"DOCKER_IMAGE": docker, "HOME": "/"},
             inputs = inputs,
@@ -279,7 +281,7 @@ def _ghdl_testbench_impl(ctx):
         add_no_run = True
         
     length = len(new_lib_file.dirname.split('/'))
-    args.add("ghdl")
+    args.add("{}".format(ghdl_compiler.path))
     args.add(elab)
     args.add("-o {}".format(test_bin_name))
     args.add("--std=08")
@@ -298,9 +300,9 @@ def _ghdl_testbench_impl(ctx):
     ctx.actions.run(
         mnemonic = "ghdlElaboration",
         executable = ghdl_tool.path,
-        tools = [ghdl_tool],
+        tools = [ghdl_tool, ghdl_compiler, ghdl_compiler_deps],
         arguments = [args],
-        env = {"DOCKER_IMAGE": docker},
+        env = {"DOCKER_IMAGE": docker, "HOME": "/"},
         inputs = [curr_lib_file] + files_to_link + src_files + lib_cfg_map.values() + sym_cf_files,
         outputs = [new_lib_file, test_bin],
     )
