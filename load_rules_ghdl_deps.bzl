@@ -22,4 +22,6 @@ def load_rules_ghdl_deps():
                 "https://github.com/ghdl/ghdl/releases/download/v0.37/ghdl-0.37-ubuntu16-llvm-3.9.tgz"
             ],
             sha256 = "3068e3eebe8aa22865b75cb271f60c6a90872181e8d50e2eb44a34f7fe9ae169",
+            strip_prefix = "ghdl-0.37-ubuntu16-llvm-3.9",
+            build_file = "@rules_ghdl//src/ghdl_toolchain.BUILD"
         )
