@@ -113,7 +113,7 @@ def _ghdl_testbench_impl(ctx):
     ghdl_tool = info.wrapper.files.to_list()[0]
     docker = info.docker;
     ghdl_compiler = info.compiler.files.to_list()[0]
-    ghdl_compilier_deps = info.compiler_deps;
+    ghdl_compiler_deps = info.compiler_deps;
 
     trans_srcs = get_transitive_srcs(
         ctx.files.srcs,
