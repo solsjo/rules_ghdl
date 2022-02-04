@@ -11,6 +11,8 @@ echo "====="
 which ghdl
 ghdl --version
 echo "====="
+./external/ghdl_toolchain/bin/ghdl --version
+echo "****"
 
 ghdl_args="$@"
 
