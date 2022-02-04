@@ -7,6 +7,11 @@ lsb_release -a
 read -a cmd_arr <<< $@
 echo "firstr: $cmd_arr"
 echo "hello3 ${cmd_arr[@]}"
+echo "====="
+which ghdl
+ghdl --version
+echo "====="
+
 ghdl_args="$@"
 
 if [ -n "$DOCKER_IMAGE" ]; then
