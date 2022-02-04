@@ -19,8 +19,8 @@ def load_rules_ghdl_deps():
         http_archive(
             name = "ghdl_toolchain",
             urls = [
-                "https://github.com/ghdl/ghdl/releases/download/nightly/ghdl-gha-ubuntu-20.04-llvm.tgz"
-            ],
-            sha256 = "e3ac0ebf0a84b90726978f38d635e09acd0f0a746fe28cc7b0a27b5f0ea19abd",
-            build_file = "@rules_ghdl//src:ghdl_toolchain.BUILD"
+                 "https://github.com/ghdl/ghdl/releases/download/v0.37/ghdl-0.37-ubuntu16-llvm-3.9.tgz"
+             ],
+             sha256 = "3068e3eebe8aa22865b75cb271f60c6a90872181e8d50e2eb44a34f7fe9ae169",
+             build_file = "@rules_ghdl//src:ghdl_toolchain.BUILD"
         )
