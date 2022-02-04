@@ -34,4 +34,4 @@ jobs:
       with:
         path: "~/.cache/bazel"
         key: bazel
-    - run: which ghdl; echo "@@@@" ./test/test_documentation.sh
+    - run: ./test/test_documentation.sh
