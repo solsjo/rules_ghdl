@@ -46,8 +46,8 @@ ls -la ./external/ghdl_toolchain/bin
 #${cmd_arr}
 
 ./external/ghdl_toolchain/bin/ghdl -a
-
-sh -c "$ghdl_args"
+echo "++++++++"
+"$ghdl_args"
 
 fi
 
