@@ -26,8 +26,8 @@ jobs:
     steps:
     - uses: actions/checkout@v2
     - uses: mishas/setup-bazelisk-action@v1
-    - name: Install xmllint
-      run: sudo apt-get install -y libgnat-4.9
+    - name: Install libgnat
+      run: sudo apt-get update && sudo apt-get install libgnat-4.9
     - uses: ghdl/setup-ghdl-ci@nightly
       with:
         backend: llvm
