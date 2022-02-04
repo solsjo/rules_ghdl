@@ -4,7 +4,7 @@ filegroup(
         "lib/ghdl/**/*.*",
         "lib/*gh.*",
         "include/**/*.*",
-        "/usr/bin/ghdl-llvm/**/*.*",
+        "bin/ghdl-llvm/**/*.*",
     ]),
     visibility = ["//visibility:public"],
 )
