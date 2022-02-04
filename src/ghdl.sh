@@ -35,7 +35,7 @@ ls -la
 ls -la ./external/ghdl_toolchain/bin
 #${cmd_arr}
 
-/home/runner/.cache/bazel/_bazel_runner/0cdc6177f8f6e40ba2024676136fee44/execroot/rules_ghdl/external/ghdl_toolchain/bin/ghdl -a
+./external/ghdl_toolchain/bin/ghdl -a
 
 sh -c "$ghdl_args"
 
