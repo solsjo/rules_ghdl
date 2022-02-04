@@ -1,6 +1,6 @@
 filegroup(
     name = "ghdl_deps",
-    srcs = glob(["**/**/*.*"]),
+    srcs = glob(["lib/**/*.*", "include/**/*.*"]),
     visibility = ["//visibility:public"],
 )
 
