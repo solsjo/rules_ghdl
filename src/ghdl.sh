@@ -11,8 +11,11 @@ ghdl_args = "$@"
 #./external/ghdl_toolchain/bin/ghdl --version
 echo "****"
 
+
 if [ -n "$old_lib_file" ]; then
+  echo "copying $old_lib_file"
   cp "$old_lib_file" "$new_lib_file"
+  ls -la "$new_lib_file"
 fi
 
 cd "$work_dir"
@@ -30,7 +33,7 @@ docker run --rm -t \
   --workdir "$PWD" \
   "$DOCKER_IMAGE" sh -c "$ghdl_args"
 else
-
+ls "$ghdl_bin/../../.."
 "$ghdl_bin" --version
 #"$ghdl_args"
 
