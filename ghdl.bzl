@@ -178,7 +178,7 @@ def _ghdl_testbench_impl(ctx):
         sym_src, out_o = _prepare_hdl_files(ctx, working_dir, src)
         inputs.append(sym_src)
         inputs.extend(p_deps.values())
-        args.add("&&")
+        
         args.add("ls ./{}".format("../" * (length)))
         #args.add("-a")
         #args.add("--std=08")
