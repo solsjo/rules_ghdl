@@ -12,7 +12,7 @@ echo "====="
 #which ghdl
 #ghdl --version
 echo "====="
-ls ./external
+#ls ./external
 echo "ls done"
 #./external/ghdl_toolchain/bin/ghdl --version
 echo "****"
