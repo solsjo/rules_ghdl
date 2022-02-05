@@ -9,8 +9,8 @@ read -a cmd_arr <<< $@
 echo "firstr: $cmd_arr"
 echo "hello3 ${cmd_arr[@]}"
 echo "====="
-which ghdl
-ghdl --version
+#which ghdl
+#ghdl --version
 echo "====="
 ls -la ./external/ghdl_toolchain/bin/ghdl
 echo "ls done"
