@@ -5,7 +5,7 @@ set -e
 lsb_release -a
 echo "----"
 #find /usr -iname "*ghdl*"
-read -a cmd_arr <<< $@
+read -a cmd_arr <<< "$@"
 echo "firstr: $cmd_arr"
 echo "hello3 ${cmd_arr[@]}"
 echo "====="
