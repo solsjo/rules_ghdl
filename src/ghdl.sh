@@ -14,7 +14,7 @@ ghdl --version
 echo "====="
 ls -la ./external/ghdl_toolchain/bin/ghdl
 echo "ls done"
-#./external/ghdl_toolchain/bin/ghdl --version
+./external/ghdl_toolchain/bin/ghdl --version
 echo "****"
 
 ghdl_args="$@"
@@ -44,7 +44,7 @@ echo "pwd: $PWD"
 ls -la
 ls -la ./external/ghdl_toolchain/bin
 #${cmd_arr}
-
+echo ">>>>>>>>>>>"
 ./external/ghdl_toolchain/bin/ghdl -a
 echo "++++++++"
 "$ghdl_args"
