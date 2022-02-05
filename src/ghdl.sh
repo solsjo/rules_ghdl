@@ -31,7 +31,8 @@ docker run --rm -t \
   "$DOCKER_IMAGE" sh -c "$ghdl_args"
 else
 
-"$ghdl_bin" "$ghdl_args"
+"$ghdl_bin" --version
+#"$ghdl_args"
 
 fi
 
