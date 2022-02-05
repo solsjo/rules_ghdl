@@ -7,7 +7,7 @@ echo "----"
 #find /usr -iname "*ghdl*"
 read -a cmd_arr <<< "$@"
 echo "firstr: $cmd_arr"
-echo "hello3 ${cmd_arr[@]}"
+echo "hello3 ${cmd_arr[1]}"
 echo "====="
 #which ghdl
 #ghdl --version
