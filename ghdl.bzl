@@ -178,15 +178,16 @@ def _ghdl_testbench_impl(ctx):
         sym_src, out_o = _prepare_hdl_files(ctx, working_dir, src)
         inputs.append(sym_src)
         inputs.extend(p_deps.values())
-        args.add("./{}{}".format("../" * (length - 1), ghdl_compiler.path))
-        args.add("-a")
-        args.add("--std=08")
-        args.add("--ieee=synopsys --warn-no-vital-generic")
-        args.add_all(flags)
-        args.add("--work={}".format(lib_name))
-        args.add_all(p_deps.values(), format_each="-P" +  "../" * length + "%s", map_each=get_dir)
-        args.add("-P./")  # Include current lib
-        args.add(src.path)
+        args.add("&&")
+        args.add("ls ./{}".format("../" * (length)))
+        #args.add("-a")
+        #args.add("--std=08")
+        #args.add("--ieee=synopsys --warn-no-vital-generic")
+        #args.add_all(flags)
+        #args.add("--work={}".format(lib_name))
+        #args.add_all(p_deps.values(), format_each="-P" +  "../" * length + "%s", map_each=get_dir)
+        #args.add("-P./")  # Include current lib
+        #args.add(src.path)
         ctx.actions.run(
             mnemonic = "ghdlAnalysis",
             executable = ghdl_tool.path,
