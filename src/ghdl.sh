@@ -49,7 +49,7 @@ ls -la external/ghdl_toolchain/bin
 echo ">>>>>>>>>>>"
 external/ghdl_toolchain/bin/ghdl --version
 echo "++++++++"
-"$@"
+sh -c "$@"
 echo "!!!!!!!!!!!!"
 
 fi
