@@ -37,10 +37,10 @@ def _prepare_cfg_file_content(ctx, args, working_dir, lib_name, old_cfg):
     work_dir = "{}{}".format(curr_src_lib_paths[0], lib_name)
 
     if old_cfg:
-        args.add("cp {} {}".format(old_cfg.path, new_lib_file.path))
-        args.add("&&")
-    args.add("cd {}".format(work_dir))
-    args.add("&&")
+        args.add("{} {}".format(old_cfg.path, new_lib_file.path))
+    else:
+        args.add('"" ""')
+    args.add("{}".format(work_dir))
 
     return new_lib_file
 
@@ -179,7 +179,7 @@ def _ghdl_testbench_impl(ctx):
         inputs.append(sym_src)
         inputs.extend(p_deps.values())
         
-        args.add("ls ./{}".format("../" * (length)))
+        args.add("./{}/{}".format("../" * length, ghdl_compiler.path))
         #args.add("-a")
         #args.add("--std=08")
         #args.add("--ieee=synopsys --warn-no-vital-generic")
