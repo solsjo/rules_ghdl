@@ -12,7 +12,6 @@ ghdl_args="$@"
 #./external/ghdl_toolchain/bin/ghdl --version
 echo "****"
 
-
 if [ -n "$old_lib_file" ]; then
   echo "copying $old_lib_file"
   cp "$old_lib_file" "$new_lib_file"
