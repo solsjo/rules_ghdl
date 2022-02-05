@@ -2,22 +2,20 @@
 
 set -e
 
-lsb_release -a
-echo "----"
-#find /usr -iname "*ghdl*"
-read -a cmd_arr <<< "$@"
-echo "firstr: $cmd_arr"
-echo "hello3 ${cmd_arr[1]}"
-echo "====="
-#which ghdl
-#ghdl --version
-echo "====="
-#ls ./external
-echo "ls done"
+old_lib_file=${1}
+new_lib_file=${2}
+work_dir=${3}
+ghdl_bin=${4}
+shift 4
+ghdl_args = "$@"
 #./external/ghdl_toolchain/bin/ghdl --version
 echo "****"
 
-ghdl_args="$@"
+if [ -n "$old_lib_file" ]; then
+  cp "$old_lib_file" "$new_lib_file"
+fi
+
+cd "$work_dir"
 
 if [ -n "$DOCKER_IMAGE" ]; then
 # regex explaination, we want to extract the output base
@@ -33,24 +31,7 @@ docker run --rm -t \
   "$DOCKER_IMAGE" sh -c "$ghdl_args"
 else
 
-echo "first $ghdl_args"
-
-echo "hello $cmd_arr"
-
-echo "hello4 ${cmd_arr}"
-
-echo "hello2 ${cmd_arr[@]}"
-echo "pwd: $PWD"
-ls -la
-ls -la external
-ls -la external/ghdl_toolchain/bin
-#ls -la ./external/ghdl_toolchain/bin
-#${cmd_arr}
-echo ">>>>>>>>>>>"
-external/ghdl_toolchain/bin/ghdl --version
-echo "++++++++"
-sh -c "$@"
-echo "!!!!!!!!!!!!"
+"$ghdl_bin" "$ghdl_args"
 
 fi
 
