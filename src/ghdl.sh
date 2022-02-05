@@ -7,7 +7,7 @@ new_lib_file=${2}
 work_dir=${3}
 ghdl_bin=${4}
 shift 4
-ghdl_args = "$@"
+ghdl_args="$@"
 #./external/ghdl_toolchain/bin/ghdl --version
 echo "****"
 
