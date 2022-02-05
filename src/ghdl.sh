@@ -42,11 +42,12 @@ echo "hello4 ${cmd_arr}"
 echo "hello2 ${cmd_arr[@]}"
 echo "pwd: $PWD"
 ls -la
-ls -la bazel-out/k8-fastbuild/bin/external/ghdl_toolchain/bin
+ls -la external
+ls -la external/ghdl_toolchain/bin
 #ls -la ./external/ghdl_toolchain/bin
 #${cmd_arr}
 echo ">>>>>>>>>>>"
-bazel-out/k8-fastbuild/bin/external/ghdl_toolchain/bin/ghdl --version
+external/ghdl_toolchain/bin/ghdl --version
 echo "++++++++"
 "$ghdl_args"
 
