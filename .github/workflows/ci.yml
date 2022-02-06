@@ -34,4 +34,4 @@ jobs:
       with:
         path: "~/.cache/bazel"
         key: bazel
-    - run: which llvm; ./test/test_documentation.sh
+    - run: echo "$CC" && ls -la $CC && which clang || :; ./test/test_documentation.sh
