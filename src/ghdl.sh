@@ -33,7 +33,7 @@ docker run --rm -t \
   --workdir "$PWD" \
   "$DOCKER_IMAGE" sh -c "$ghdl_args"
 else
-ls "$ghdl_bin/../../.."
+ls "$ghdl_bin"
 "$ghdl_bin" --version
 #"$ghdl_args"
 
