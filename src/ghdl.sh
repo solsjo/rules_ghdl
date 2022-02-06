@@ -33,8 +33,9 @@ docker run --rm -t \
   --workdir "$PWD" \
   "$DOCKER_IMAGE" sh -c "$ghdl_args"
 else
-ls "$ghdl_bin/external/ghdl_toolchain/bin"
-"$ghdl_bin /external/ghdl_toolchain/bin/ghdl" --version
+ls "$ghdl_bin/external"
+echo "::::::::::"
+"$ghdl_bin/external/ghdl_toolchain/bin/ghdl" --version
 #"$ghdl_args"
 
 fi
