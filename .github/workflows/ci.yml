@@ -34,4 +34,4 @@ jobs:
       with:
         path: "~/.cache/bazel"
         key: bazel
-    - run: ./test/test_documentation.sh
+    - run: which llvm; ./test/test_documentation.sh
