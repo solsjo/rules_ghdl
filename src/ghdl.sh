@@ -8,9 +8,9 @@ work_dir=${3}
 ghdl_bin=${4}
 shift 4
 echo "first>>>>>>>>>>>>>>>>>>>>>"
-ghdl_args="$@"
+#ghdl_args="$@"
 
-readarray -t ghdl_args < <("$@")
+readarray -td, ghdl_args <<<"$@"
 echo "cmds::: ${ghdl_args[@]}"
 #./external/ghdl_toolchain/bin/ghdl --version
 echo "****"
