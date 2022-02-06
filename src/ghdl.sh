@@ -10,8 +10,8 @@ shift 4
 echo "first>>>>>>>>>>>>>>>>>>>>>"
 ghdl_args="$@"
 
-readarray -t ghdl_args < <("$@")
-
+readarray -t ghdl_args < "$@"
+echo "cmds::: ${ghdl_args[@]}"
 #./external/ghdl_toolchain/bin/ghdl --version
 echo "****"
 
