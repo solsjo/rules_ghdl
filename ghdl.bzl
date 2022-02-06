@@ -37,7 +37,8 @@ def _prepare_cfg_file_content(ctx, args, working_dir, lib_name, old_cfg):
     work_dir = "{}{}".format(curr_src_lib_paths[0], lib_name)
 
     if old_cfg:
-        args.add("{} {}".format(old_cfg.path, new_lib_file.path))
+        args.add(old_cfg.path)
+        args.add(new_lib_file.path)
     else:
         args.add("")
         args.add("")
