@@ -47,19 +47,35 @@ def _prepare_cfg_file_content(ctx, args, working_dir, lib_name, old_cfg):
     return new_lib_file
 
 
+def get_execroot_workdir_rel_path(file):
+    depth = len(file.dirname.split('/'))
+    return "../" * depth
+
+
 def _prepare_hdl_files(ctx, working_dir, src):
     # o file generation
 
     file_name = src.basename.split(".")[0]
     out_name = "{}/{}.o".format(working_dir, file_name)
-    out_o = ctx.actions.declare_file(out_name)
+    output_o_file = ctx.actions.declare_file(out_name)
 
     sym_src_path = "{}/{}".format(working_dir, src.path)
     sym_src = ctx.actions.declare_file(sym_src_path)
     ctx.actions.symlink(output=sym_src, target_file=src)
 
-    return sym_src, out_o
+    return sym_src, output_o_file
 
+
+def create_compiled_src_symlinks_for_analysis(ctx, working_dir, compiled_srcs):
+    sym_linked_srcs = []
+    for i in range(len(compiled_srcs)):
+        comp_src = compiled_srcs[i]
+        _lib_sym_src_path = "{}/{}".format(working_dir, comp_src.path)
+        lib_sym_src = ctx.actions.declare_file(_lib_sym_src_path)
+        ctx.actions.symlink(output=lib_sym_src, target_file=comp_src)
+        sym_linked_srcs.append(lib_sym_src)
+    return sym_linked_srcs
+   
 
 def _ghdl_units_impl(ctx):
     # GHDL employes a library config file, that is updated on analysis
@@ -112,112 +128,96 @@ def _ghdl_units_impl(ctx):
         GHDLFiles(transitive_sources=trans_srcs, lib_name=lib_id, src_map=src_map)
     ]
 
+def get_dep_libs(lib_cfg_map, unit_lib_deps):
+    p_deps = {}
+        
+    for dep_lib in unit_lib_deps:
+        # always use latest version
+        p_deps[dep_lib] = lib_cfg_map[dep_lib]
 
-def _ghdl_elaboration_impl(ctx):
-    info = ctx.toolchains["@rules_ghdl//:ghdl_toolchain_type"].ghdlinfo
-    ghdl_tool = info.wrapper.files.to_list()[0]
-    docker = info.docker;
-    ghdl_compiler = info.compiler_path.files.to_list()[0]
-    ghdl_compiler_deps = info.compiler_deps.files.to_list()
-    c_compiler = info.c_compiler;
+    return p_deps
 
-    trans_srcs = get_transitive_srcs(
-        ctx.files.srcs,
-        ctx.attr.deps
-        )
-
-    srcs = trans_srcs.to_list()
-    _elaboration_sym_srcs = []
-
-    lib_cfg_map = {}
-
-    out_o = None
-    compiled_output_files = []
-    sym_o_files = []
-    comp_srcs = []
-    _lib_sym_srcs = []
-
-    outs = []
-
+def build_source_map(deps):
     src_map = {}
     for dep in ctx.attr.deps:
         for src, settings in dep[GHDLFiles].src_map.items():
             if src not in src_map:
                 src_map[src] = settings
+    return src_map
 
-    # Analysis phase
-    for src in srcs:
-        lib = src_map[src]["lib_name"]
-        lib_name = lib.split("/")[-1]
-        flags = src_map[src]["flags"]
-
-        p_deps = {}
-        inputs = []
-        for dep_lib in src_map[src]["unit_lib_deps"]:
-            # always use latest version
-            p_deps[dep_lib] = lib_cfg_map[dep_lib]
-
-
-        if lib not in lib_cfg_map:
-            lib_cfg_map[lib] = None
-        else:
-            inputs.append(lib_cfg_map[lib])
-        curr_lib_file = lib_cfg_map[lib]
-
-        working_dir = "objs/{}/{}".format(src.basename.split(".")[0], lib_name)
-        args = ctx.actions.args()
-        new_lib_file = _prepare_cfg_file_content(
-            ctx,
-            args,
-            working_dir,
-            lib_name,
-            curr_lib_file,
+def get_srcs(ctx):
+    trans_srcs = get_transitive_srcs(
+        ctx.files.srcs,
+        ctx.attr.deps
         )
-        length = len(new_lib_file.dirname.split('/'))
-        for i in range(len(comp_srcs)):
-            comp_src = comp_srcs[i]
-            _lib_sym_src_path = "{}/{}".format(working_dir, comp_src.path)
-            lib_sym_src = ctx.actions.declare_file(_lib_sym_src_path)
-            ctx.actions.symlink(output=lib_sym_src, target_file=comp_src)
-            _lib_sym_srcs.append(lib_sym_src)
-        inputs.extend(_lib_sym_srcs)
-        inputs.extend(comp_srcs)
-        sym_src, out_o = _prepare_hdl_files(ctx, working_dir, src)
-        inputs.append(sym_src)
-        inputs.extend(p_deps.values())
+    srcs = trans_srcs.to_list()
+    return srcs
+
+
+def _ghdl_analysis(src, srcs_map, lib_cfg_map, compiled_output_files, compiled_srcs):
+    args = ctx.actions.args()
+
+    lib = src_map[src]["lib_name"]
+    lib_name = lib.split("/")[-1]
+    flags = src_map[src]["flags"]
+    unit_lib_deps = src_map[src]["unit_lib_deps"]
+
+    p_deps = get_dep_libs(lib_cfg_map, unit_lib_deps).values()
+    curr_lib_file = lib_cfg_map.get(lib, default=None)
+    working_dir = "objs/{}/{}".format(src.basename.split(".")[0], lib_name)
+    new_lib_file = _prepare_cfg_file_content(
+        ctx,
+        args,
+        working_dir,
+        lib_name,
+        curr_lib_file,
+    )
+    rel_path = get_execroot_workdir_rel_path(new_lib_file)
+    work_dir_symlink_srcs = create_compiled_src_symlinks_for_analysis(ctx, working_dir, compiled_srcs)
+    sym_src, output_o_file = _prepare_hdl_files(ctx, working_dir, src)
         
-        args.add("./{}{}".format("../" * length, ghdl_compiler.path))
-        args.add("-a")
-        args.add("--std=08")
-        args.add("--ieee=synopsys --warn-no-vital-generic")
-        args.add_all(flags)
-        args.add("--work={}".format(lib_name))
-        args.add_all(p_deps.values(), format_each="-P" +  "../" * length + "%s", map_each=get_dir)
-        args.add("-P./")  # Include current lib
-        args.add(src.path)
-        ctx.actions.run(
-            mnemonic = "ghdlAnalysis",
-            executable = ghdl_tool.path,
-            tools = [ghdl_tool, ghdl_compiler] + ghdl_compiler_deps,
-            arguments = [args],
-            env = {"DOCKER_IMAGE": docker, "HOME": "/", "CC": c_compiler},
-            inputs = inputs,
-            outputs = [new_lib_file, out_o],
-        )
+    inputs = []
+    inputs.extend(work_dir_symlink_srcs)
+    inputs.extend(compiled_srcs)
+    inputs.append(sym_src)
+    inputs.append(curr_lib_file)
+    inputs.extend(p_deps)
+        
+    args.add("./{}{}".format(rel_path, ghdl_compiler.path))
+    args.add("-a")
+    args.add("--std=08")
+    args.add("--ieee=synopsys --warn-no-vital-generic")
+    args.add_all(flags)
+    args.add("--work={}".format(lib_name))
+    args.add_all(p_deps, format_each="-P{}%s".format(rel_path), map_each=get_dir)
+    args.add(src.path)
+    ctx.actions.run(
+        mnemonic = "ghdlAnalysis",
+        executable = ghdl_tool.path,
+        tools = [ghdl_tool, ghdl_compiler] + ghdl_compiler_deps,
+        arguments = [args],
+        env = {"DOCKER_IMAGE": docker, "HOME": "/", "CC": c_compiler},
+        inputs = inputs,
+        outputs = [new_lib_file, output_o_file],
+    )
 
-        # Update lib file used for the lib
-        lib_cfg_map[lib]=new_lib_file
+    # Update lib file used for the lib
+    lib_cfg_map[lib]=new_lib_file
 
-        # Save the output files, they will be needed later, in the
-        # elaboration stage.
-        compiled_output_files.append(out_o)
-        comp_srcs.append(src)
+    # Save the output files, they will be needed later, in the
+    # elaboration stage.
+    compiled_output_files.append(output_o_file)
+    compiled_srcs.append(src)
 
+
+_ghdl_elaboration(srcs, src, srcs_map, lib_cfg_map, compiled_output_files):
+    p_deps = get_dep_libs(lib_cfg_map, src_map[src]["unit_lib_deps"])
     working_dir = "bin/{}/{}".format(src.basename.split(".")[0], lib_name)
     tb_file = src
     sym_cf_files = []
 
-
+    symlinked_o_files = []
+    _elaboration_sym_srcs = []
     for i in range(len(srcs)):
         # Check if src file belongs to current lib, if so, create symlinks in current dir,
         # else create symlinks to library dir for that library in bin folder, as well as
@@ -227,7 +227,7 @@ def _ghdl_elaboration_impl(ctx):
             o_file = compiled_output_files[i]
             out_name = "{}/{}".format(working_dir, o_file.basename)
             sym_o_file = ctx.actions.declare_file(out_name)
-            sym_o_files.append(sym_o_file)
+            symlinked_o_files.append(sym_o_file)
             ctx.actions.symlink(output=sym_o_file, target_file=o_file)
             
             src = srcs[i]
@@ -241,7 +241,7 @@ def _ghdl_elaboration_impl(ctx):
             lib_working_dir = "bin/{}/{}".format(tb_file.basename.split(".")[0], src_map[src]["lib_name"])
             out_name = "{}/{}".format(lib_working_dir, o_file.basename)
             sym_o_file = ctx.actions.declare_file(out_name)
-            sym_o_files.append(sym_o_file)
+            symlinked_o_files.append(sym_o_file)
             ctx.actions.symlink(output=sym_o_file, target_file=o_file)
 
             _elaboration_sym_src_path = "{}/{}".format(lib_working_dir, src.path)
@@ -260,17 +260,17 @@ def _ghdl_elaboration_impl(ctx):
 
     files_to_link = []
     files_to_link.extend(compiled_output_files)
-    files_to_link.extend(sym_o_files)
+    files_to_link.extend(symlinked_o_files)
 
     src_files = []
     src_files.extend(srcs)
     src_files.extend(_elaboration_sym_srcs)
 
-    test_bin_name = ctx.attr.entity_name
+    elaboration_artifact_name = ctx.attr.entity_name
     if ctx.attr.arch:
-        test_bin_name += "-{}".format(ctx.attr.arch)
+        elaboration_artifact_name += "-{}".format(ctx.attr.arch)
 
-    test_bin = ctx.actions.declare_file("{}/{}".format(working_dir, test_bin_name))
+    elaboration_artifact = ctx.actions.declare_file("{}/{}".format(working_dir, elaboration_artifact_name))
     curr_lib_file = lib_cfg_map[lib]
 
     args = ctx.actions.args()
@@ -291,7 +291,7 @@ def _ghdl_elaboration_impl(ctx):
     length = len(new_lib_file.dirname.split('/'))
     args.add("./{}{}".format("../" * length, ghdl_compiler.path))
     args.add(elab)
-    args.add("-o {}".format(test_bin_name))
+    args.add("-o {}".format(elaboration_artifact_name))
     args.add("--std=08")
     args.add("--ieee=synopsys --warn-no-vital-generic")
     args.add("--work={}".format(lib_name))
@@ -312,12 +312,36 @@ def _ghdl_elaboration_impl(ctx):
         arguments = [args],
         env = {"DOCKER_IMAGE": docker, "HOME": "/", "CC": c_compiler},
         inputs = [curr_lib_file] + files_to_link + src_files + lib_cfg_map.values() + sym_cf_files,
-        outputs = [new_lib_file, test_bin],
+        outputs = [new_lib_file, elaboration_artifact],
     )
 
+    return elaboration_artifact
+
+
+def _ghdl_elaboration_impl(ctx):
+    # Tooling
+    info = ctx.toolchains["@rules_ghdl//:ghdl_toolchain_type"].ghdlinfo
+    ghdl_tool = info.wrapper.files.to_list()[0]
+    docker = info.docker;
+    ghdl_compiler = info.compiler_path.files.to_list()[0]
+    ghdl_compiler_deps = info.compiler_deps.files.to_list()
+    c_compiler = info.c_compiler;
+
+    srcs = get_srcs(ctx)
+    src_map = build_source_map(ctx.attr.deps):
+
+    lib_cfg_map = {}
+    compiled_output_files = []
+    compiled_srcs = []
+
+    for src in srcs:
+        _ghdl_analysis(src, srcs_map, lib_cfg_map, compiled_output_files, compiled_srcs)
+
+    elaboration_artifact = _ghdl_elaboration(srcs, src, srcs_map, lib_cfg_map, compiled_output_files)
+
     return [
-        DefaultInfo(files = depset([test_bin])),
-        GHDLFiles(transitive_sources=trans_srcs, outs=[test_bin])
+        DefaultInfo(files = depset([elaboration_artifact])),
+        GHDLFiles(transitive_sources=srcs, outs=[elaboration_artifact])
     ]
 
 
@@ -342,8 +366,8 @@ ghdl_library = rule(
 )
 
 # TODO: Should probably be renamed to ghdl_elaboration
-ghdl_testbench = rule(
-    implementation = _ghdl_testbench_impl,
+ghdl_elaboration = rule(
+    implementation = _ghdl_elaboration_impl,
     attrs = {
         "entity_name": attr.string(mandatory=True),
         "arch": attr.string(mandatory=False),

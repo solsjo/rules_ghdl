@@ -20,7 +20,7 @@ ghdl_units(
     lib = ":ghdl_example_lib"
 )
 
-ghdl_testbench(
+ghdl_elaboration(
     name = "ghdl_example_tb",
     entity_name = "counter_tb",
     arch = "testbench",
