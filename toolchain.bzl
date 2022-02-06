@@ -22,6 +22,6 @@ ghdl_toolchain = rule(
         "docker": attr.string(),
         "wrapper": attr.label(default="@rules_ghdl//src:default_ghdl"),
         "compiler_deps": attr.label(default="@ghdl_toolchain//:ghdl_deps")
-        "c_compiler": attr.string(),
+        "c_compiler": attr.string(default="/usr/bin/clang"),
     },
 )
