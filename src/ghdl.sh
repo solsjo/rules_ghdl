@@ -9,6 +9,9 @@ ghdl_bin=${4}
 shift 4
 echo "first>>>>>>>>>>>>>>>>>>>>>"
 ghdl_args="$@"
+
+readarray -t ghdl_args < <("$@")
+
 #./external/ghdl_toolchain/bin/ghdl --version
 echo "****"
 
@@ -35,7 +38,7 @@ docker run --rm -t \
 else
 ls "$ghdl_bin"
 echo "::::::::::"
-"$ghdl_bin" "$@"
+"$ghdl_bin" "$ghdl_args[@]"
 
 fi
 
