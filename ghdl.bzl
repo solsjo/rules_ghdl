@@ -29,8 +29,8 @@ def get_transitive_srcs(srcs, deps):
 
 
 def _prepare_cfg_file_content(ctx, args, working_dir, lib_name, old_cfg):
+    # ghdl lib file generation
 
-    # cfg file generation
     new_lib_file_path = "{}/{}".format(working_dir, "{}-obj08.cf".format(lib_name))
     new_lib_file = ctx.actions.declare_file(new_lib_file_path)
     curr_src_lib_paths = new_lib_file.dirname.split(lib_name)
@@ -48,8 +48,8 @@ def _prepare_cfg_file_content(ctx, args, working_dir, lib_name, old_cfg):
 
 
 def _prepare_hdl_files(ctx, working_dir, src):
-
     # o file generation
+
     file_name = src.basename.split(".")[0]
     out_name = "{}/{}.o".format(working_dir, file_name)
     out_o = ctx.actions.declare_file(out_name)
@@ -66,8 +66,8 @@ def _ghdl_units_impl(ctx):
     # of each unit belonging to the library.
     # The format of the config is GHDL internal.
     # bazel on the other hand will treat the output of an action as
-    # immutable, so that builds can be hermetic.
-    # Therefore we aren't allowed to update the config in the next analysis
+    # immutable, so that builds can be considered hermetic.
+    # Therefore, bazel won't allowed to update the config in the next analysis
     # action.
     # So, to simplify and to not pick a fight with the internals of ghdl
     # and allow shareable bazel action cache artifacts.
@@ -76,6 +76,9 @@ def _ghdl_units_impl(ctx):
     # So ghdl units is only a collection phase.
     # To still allow updates of the config file, the library file is
     # copied for each action where it is needed.
+    #
+    # Also, since the library file SHA would be affected by different,
+    # this ought to provide a re-usable lib file, at least project wise.
 
     trans_srcs = get_transitive_srcs(
         ctx.files.srcs,
@@ -84,7 +87,7 @@ def _ghdl_units_impl(ctx):
 
     lib_id = "{}/{}".format(ctx.label.workspace_name, ctx.attr.lib[GHDLFiles].lib_name)
 
-    unit_settings = []
+    unit_settings = [] # TODO: currently unused
     unit_lib_deps = []
     src_map = {}
 
@@ -110,7 +113,7 @@ def _ghdl_units_impl(ctx):
     ]
 
 
-def _ghdl_testbench_impl(ctx):
+def _ghdl_elaboration_impl(ctx):
     info = ctx.toolchains["@rules_ghdl//:ghdl_toolchain_type"].ghdlinfo
     ghdl_tool = info.wrapper.files.to_list()[0]
     docker = info.docker;
@@ -142,6 +145,7 @@ def _ghdl_testbench_impl(ctx):
             if src not in src_map:
                 src_map[src] = settings
 
+    # Analysis phase
     for src in srcs:
         lib = src_map[src]["lib_name"]
         lib_name = lib.split("/")[-1]
