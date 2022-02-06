@@ -11,9 +11,7 @@ shift 4
 readarray -td, ghdl_args <<<"$@"
 
 if [ -n "$old_lib_file" ]; then
-  echo "copying $old_lib_file"
   cp "$old_lib_file" "$new_lib_file"
-  ls -la "$new_lib_file"
 fi
 
 cd "$work_dir"
