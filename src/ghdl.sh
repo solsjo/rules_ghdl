@@ -35,8 +35,7 @@ docker run --rm -t \
 else
 ls "$ghdl_bin"
 echo "::::::::::"
-"$ghdl_bin" --version
-#"$ghdl_args"
+"$ghdl_bin" "$@"
 
 fi
 
