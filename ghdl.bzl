@@ -115,6 +115,7 @@ def _ghdl_testbench_impl(ctx):
     docker = info.docker;
     ghdl_compiler = info.compiler_path.files.to_list()[0]
     ghdl_compiler_deps = info.compiler_deps.files.to_list()
+    c_compiler = info.c_compiler;
 
     trans_srcs = get_transitive_srcs(
         ctx.files.srcs,
@@ -194,7 +195,7 @@ def _ghdl_testbench_impl(ctx):
             executable = ghdl_tool.path,
             tools = [ghdl_tool, ghdl_compiler] + ghdl_compiler_deps,
             arguments = [args],
-            env = {"DOCKER_IMAGE": docker, "HOME": "/"},
+            env = {"DOCKER_IMAGE": docker, "HOME": "/", "CC": c_compiler},
             inputs = inputs,
             outputs = [new_lib_file, out_o],
         )
@@ -304,7 +305,7 @@ def _ghdl_testbench_impl(ctx):
         executable = ghdl_tool.path,
         tools = [ghdl_tool, ghdl_compiler] + ghdl_compiler_deps,
         arguments = [args],
-        env = {"DOCKER_IMAGE": docker, "HOME": "/"},
+        env = {"DOCKER_IMAGE": docker, "HOME": "/", "CC": c_compiler},
         inputs = [curr_lib_file] + files_to_link + src_files + lib_cfg_map.values() + sym_cf_files,
         outputs = [new_lib_file, test_bin],
     )
