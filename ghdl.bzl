@@ -154,7 +154,12 @@ def get_srcs(ctx):
     return srcs
 
 
-def _ghdl_analysis(ctx, src, srcs_map, lib_cfg_map, compiled_output_files, compiled_srcs):
+def _ghdl_analysis(ctx, info, src, src_map, lib_cfg_map, compiled_output_files, compiled_srcs):
+    ghdl_tool = info.wrapper.files.to_list()[0]
+    docker = info.docker;
+    ghdl_compiler = info.compiler_path.files.to_list()[0]
+    ghdl_compiler_deps = info.compiler_deps.files.to_list()
+    c_compiler = info.c_compiler;
     args = ctx.actions.args()
 
     lib = src_map[src]["lib_name"]
@@ -210,8 +215,18 @@ def _ghdl_analysis(ctx, src, srcs_map, lib_cfg_map, compiled_output_files, compi
     compiled_srcs.append(src)
 
 
-def _ghdl_elaboration(ctx, srcs, src, srcs_map, lib_cfg_map, compiled_output_files):
-    p_deps = get_dep_libs(lib_cfg_map, src_map[src]["unit_lib_deps"])
+def _ghdl_elaboration(ctx, info, srcs, src, src_map, lib_cfg_map, compiled_output_files):
+    ghdl_tool = info.wrapper.files.to_list()[0]
+    docker = info.docker;
+    ghdl_compiler = info.compiler_path.files.to_list()[0]
+    ghdl_compiler_deps = info.compiler_deps.files.to_list()
+    c_compiler = info.c_compiler;
+    lib = src_map[src]["lib_name"]
+    lib_name = lib.split("/")[-1]
+    flags = src_map[src]["flags"]
+    unit_lib_deps = src_map[src]["unit_lib_deps"]
+
+    p_deps = get_dep_libs(lib_cfg_map, unit_lib_deps)
     working_dir = "bin/{}/{}".format(src.basename.split(".")[0], lib_name)
     tb_file = src
     sym_cf_files = []
@@ -321,23 +336,18 @@ def _ghdl_elaboration(ctx, srcs, src, srcs_map, lib_cfg_map, compiled_output_fil
 def _ghdl_elaboration_impl(ctx):
     # Tooling
     info = ctx.toolchains["@rules_ghdl//:ghdl_toolchain_type"].ghdlinfo
-    ghdl_tool = info.wrapper.files.to_list()[0]
-    docker = info.docker;
-    ghdl_compiler = info.compiler_path.files.to_list()[0]
-    ghdl_compiler_deps = info.compiler_deps.files.to_list()
-    c_compiler = info.c_compiler;
 
     srcs = get_srcs(ctx)
-    src_map = build_source_map(ctx.attr.deps):
+    src_map = build_source_map(ctx.attr.deps)
 
     lib_cfg_map = {}
     compiled_output_files = []
     compiled_srcs = []
 
     for src in srcs:
-        _ghdl_analysis(ctx, src, srcs_map, lib_cfg_map, compiled_output_files, compiled_srcs)
+        _ghdl_analysis(ctx, info, src, src_map, lib_cfg_map, compiled_output_files, compiled_srcs)
 
-    elaboration_artifact = _ghdl_elaboration(ctx, srcs, src, srcs_map, lib_cfg_map, compiled_output_files)
+    elaboration_artifact = _ghdl_elaboration(ctx, info, srcs, src, src_map, lib_cfg_map, compiled_output_files)
 
     return [
         DefaultInfo(files = depset([elaboration_artifact])),
