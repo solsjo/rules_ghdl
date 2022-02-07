@@ -1,4 +1,4 @@
-load("@rules_ghdl//:ghdl.bzl", "ghdl_units", "ghdl_library", "ghdl_testbench")
+load("@rules_ghdl//:ghdl.bzl", "ghdl_units", "ghdl_library", "ghdl_elaboration")
 
 ghdl_library(name="ghdl_example_lib")
 
