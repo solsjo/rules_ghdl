@@ -210,7 +210,7 @@ def _ghdl_analysis(src, srcs_map, lib_cfg_map, compiled_output_files, compiled_s
     compiled_srcs.append(src)
 
 
-_ghdl_elaboration(srcs, src, srcs_map, lib_cfg_map, compiled_output_files):
+def _ghdl_elaboration(srcs, src, srcs_map, lib_cfg_map, compiled_output_files):
     p_deps = get_dep_libs(lib_cfg_map, src_map[src]["unit_lib_deps"])
     working_dir = "bin/{}/{}".format(src.basename.split(".")[0], lib_name)
     tb_file = src
