@@ -55,7 +55,6 @@ def get_execroot_workdir_rel_path(file):
 def create_sym_link(ctx, target, sym_link_name, sym_link_path):
     out_name = "{}/{}".format(sym_link_path, sym_link_name)
     sym_link_file = ctx.actions.declare_file(out_name)
-    symlinked_o_files.append(sym_link_file)
     ctx.actions.symlink(output=sym_link_file, target_file=target)
     return sym_link_file
 
