@@ -52,6 +52,14 @@ def get_execroot_workdir_rel_path(file):
     return "../" * depth
 
 
+def create_sym_link(target, sym_link_path):
+    out_name = "{}/{}".format(sym_link_path, target.basename)
+    sym_link_file = ctx.actions.declare_file(out_name)
+    symlinked_o_files.append(sym_link_file)
+    ctx.actions.symlink(output=sym_link_file, target_file=target)
+    return sym_link_file
+
+
 def _prepare_hdl_files(ctx, working_dir, src):
     # o file generation
 
@@ -240,11 +248,8 @@ def _ghdl_elaboration(ctx, info, srcs, src, src_map, lib_cfg_map, compiled_outpu
         # the cf file and change -P to point there too?
         # Or create symlinks into the same lib base dir as where the srcs are stored in bin
         if src_map[srcs[i]]["lib_name"] == lib:
-            o_file = compiled_output_files[i]
-            out_name = "{}/{}".format(working_dir, o_file.basename)
-            sym_o_file = ctx.actions.declare_file(out_name)
+            sym_o_file = create_sym_link(compiled_output_files[i], working_dir)
             symlinked_o_files.append(sym_o_file)
-            ctx.actions.symlink(output=sym_o_file, target_file=o_file)
             
             src = srcs[i]
             _elaboration_sym_src_path = "{}/{}".format(working_dir, src.path)
