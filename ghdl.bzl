@@ -52,8 +52,8 @@ def get_execroot_workdir_rel_path(file):
     return "../" * depth
 
 
-def create_sym_link(target, sym_link_path):
-    out_name = "{}/{}".format(sym_link_path, target.basename)
+def create_sym_link(ctx, target, sym_link_name, sym_link_path):
+    out_name = "{}/{}".format(sym_link_path, sym_link_name)
     sym_link_file = ctx.actions.declare_file(out_name)
     symlinked_o_files.append(sym_link_file)
     ctx.actions.symlink(output=sym_link_file, target_file=target)
@@ -162,6 +162,10 @@ def get_srcs(ctx):
     return srcs
 
 
+def build_path(start, middle, end):
+    return "{}/{}/{}".format(start, middle.basename.split(".")[0], end)
+
+
 def _ghdl_analysis(ctx, info, src, src_map, lib_cfg_map, compiled_output_files, compiled_srcs):
     ghdl_tool = info.wrapper.files.to_list()[0]
     docker = info.docker;
@@ -177,7 +181,7 @@ def _ghdl_analysis(ctx, info, src, src_map, lib_cfg_map, compiled_output_files, 
 
     p_deps = get_dep_libs(lib_cfg_map, unit_lib_deps).values()
     curr_lib_file = lib_cfg_map.get(lib, default=None)
-    working_dir = "objs/{}/{}".format(src.basename.split(".")[0], lib_name)
+    working_dir = build_path("objs", src, lib_name)
     new_lib_file = _prepare_cfg_file_content(
         ctx,
         args,
@@ -236,8 +240,8 @@ def _ghdl_elaboration(ctx, info, srcs, src, src_map, lib_cfg_map, compiled_outpu
     unit_lib_deps = src_map[src]["unit_lib_deps"]
 
     p_deps = get_dep_libs(lib_cfg_map, unit_lib_deps)
-    working_dir = "bin/{}/{}".format(src.basename.split(".")[0], lib_name)
-    tb_file = src
+    working_dir = build_path("bin", src, lib_name)
+    top_ent_file = src
     sym_cf_files = []
 
     symlinked_o_files = []
@@ -248,36 +252,21 @@ def _ghdl_elaboration(ctx, info, srcs, src, src_map, lib_cfg_map, compiled_outpu
         # the cf file and change -P to point there too?
         # Or create symlinks into the same lib base dir as where the srcs are stored in bin
         if src_map[srcs[i]]["lib_name"] == lib:
-            sym_o_file = create_sym_link(compiled_output_files[i], working_dir)
-            symlinked_o_files.append(sym_o_file)
-            
-            src = srcs[i]
-            _elaboration_sym_src_path = "{}/{}".format(working_dir, src.path)
-            elaboration_sym_src = ctx.actions.declare_file(_elaboration_sym_src_path)
-            ctx.actions.symlink(output=elaboration_sym_src, target_file=src)
-            _elaboration_sym_srcs.append(elaboration_sym_src)
+            sym_path = working_dir
         else:
-            src = srcs[i]
-            o_file = compiled_output_files[i]
-            lib_working_dir = "bin/{}/{}".format(tb_file.basename.split(".")[0], src_map[src]["lib_name"])
-            out_name = "{}/{}".format(lib_working_dir, o_file.basename)
-            sym_o_file = ctx.actions.declare_file(out_name)
-            symlinked_o_files.append(sym_o_file)
-            ctx.actions.symlink(output=sym_o_file, target_file=o_file)
+            sym_path = build_path("bin", top_ent_file, src_map[src]["lib_name"])
 
-            _elaboration_sym_src_path = "{}/{}".format(lib_working_dir, src.path)
-            elaboration_sym_src = ctx.actions.declare_file(_elaboration_sym_src_path)
-            ctx.actions.symlink(output=elaboration_sym_src, target_file=src)
-            _elaboration_sym_srcs.append(elaboration_sym_src)
+        src = srcs[i]
+        o_file = compiled_output_files[i]
+            
+        symlinked_o_files.append(create_sym_link(ctx, o_file, o_file.basename, sym_path))
+        _elaboration_sym_srcs.append(create_sym_link(ctx, src, src.path, sym_path))
+
 
     for name, t_dep in p_deps.items():
-        
         if name != lib:
-            lib_working_dir = "bin/{}/{}".format(tb_file.basename.split(".")[0], name)
-            out_name = "{}/{}".format(lib_working_dir, t_dep.basename)
-            sym_cf_file = ctx.actions.declare_file(out_name)
-            sym_cf_files.append(sym_cf_file)
-            ctx.actions.symlink(output=sym_cf_file, target_file=t_dep)
+            lib_working_dir = build_path("bin", top_ent_file, name)
+            sym_cf_files.append(create_sym_link(ctx, t_dep, t_dep.basename, lib_working_dir))
 
     files_to_link = []
     files_to_link.extend(compiled_output_files)
