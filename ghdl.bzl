@@ -185,7 +185,8 @@ def _ghdl_analysis(ctx, info, src, src_map, lib_cfg_map, compiled_output_files, 
     inputs.extend(work_dir_symlink_srcs)
     inputs.extend(compiled_srcs)
     inputs.append(sym_src)
-    inputs.append(curr_lib_file)
+    if curr_lib_file:
+        inputs.append(curr_lib_file)
     inputs.extend(p_deps)
         
     args.add("./{}{}".format(rel_path, ghdl_compiler.path))
