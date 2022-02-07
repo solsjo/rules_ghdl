@@ -139,7 +139,7 @@ def get_dep_libs(lib_cfg_map, unit_lib_deps):
 
 def build_source_map(deps):
     src_map = {}
-    for dep in ctx.attr.deps:
+    for dep in deps:
         for src, settings in dep[GHDLFiles].src_map.items():
             if src not in src_map:
                 src_map[src] = settings
@@ -154,7 +154,7 @@ def get_srcs(ctx):
     return srcs
 
 
-def _ghdl_analysis(src, srcs_map, lib_cfg_map, compiled_output_files, compiled_srcs):
+def _ghdl_analysis(ctx, src, srcs_map, lib_cfg_map, compiled_output_files, compiled_srcs):
     args = ctx.actions.args()
 
     lib = src_map[src]["lib_name"]
@@ -210,7 +210,7 @@ def _ghdl_analysis(src, srcs_map, lib_cfg_map, compiled_output_files, compiled_s
     compiled_srcs.append(src)
 
 
-def _ghdl_elaboration(srcs, src, srcs_map, lib_cfg_map, compiled_output_files):
+def _ghdl_elaboration(ctx, srcs, src, srcs_map, lib_cfg_map, compiled_output_files):
     p_deps = get_dep_libs(lib_cfg_map, src_map[src]["unit_lib_deps"])
     working_dir = "bin/{}/{}".format(src.basename.split(".")[0], lib_name)
     tb_file = src
@@ -335,9 +335,9 @@ def _ghdl_elaboration_impl(ctx):
     compiled_srcs = []
 
     for src in srcs:
-        _ghdl_analysis(src, srcs_map, lib_cfg_map, compiled_output_files, compiled_srcs)
+        _ghdl_analysis(ctx, src, srcs_map, lib_cfg_map, compiled_output_files, compiled_srcs)
 
-    elaboration_artifact = _ghdl_elaboration(srcs, src, srcs_map, lib_cfg_map, compiled_output_files)
+    elaboration_artifact = _ghdl_elaboration(ctx, srcs, src, srcs_map, lib_cfg_map, compiled_output_files)
 
     return [
         DefaultInfo(files = depset([elaboration_artifact])),
