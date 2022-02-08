@@ -26,8 +26,8 @@ genrule(
     name = "ghdl-srcs",
     outs = ghdl_files,
     cmd = "\n".join([
-        'mkdir bin'
-        'export INSTALL_DIR=$$(pwd)/bin'
+        'mkdir bin',
+        'export INSTALL_DIR=$$(pwd)/bin',
         'mkdir build',
         'cd build',
         '../configure --with-llvm-config --prefix=$$INSTALL_DIR',
