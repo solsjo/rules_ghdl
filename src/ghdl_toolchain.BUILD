@@ -28,7 +28,7 @@ genrule(
         'mkdir bin',
         'export INSTALL_DIR=$$(pwd)/bin',
         'mkdir build',
-        'ls -la $$(pwd)/bazel-out && cd build',
+        'echo "$$(pwd)" && ls -la $$(pwd)/bazel-out && cd build',
         '../configure --with-llvm-config --prefix=$$INSTALL_DIR',
         'make',
         'make install'
