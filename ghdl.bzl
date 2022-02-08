@@ -249,7 +249,7 @@ def _ghdl_elaboration(ctx, info, srcs, top_ent_file, src_map, lib_cfg_map, compi
     unit_lib_deps = src_map[top_ent_file]["unit_lib_deps"]
 
     p_deps = get_dep_libs(lib_cfg_map, unit_lib_deps)
-    working_dir = build_path("bin", src, lib_name)
+    working_dir = build_path("bin", top_ent_file, lib_name)
     sym_cf_files = []
 
     symlinked_o_files = []
