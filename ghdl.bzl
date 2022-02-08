@@ -203,7 +203,7 @@ def _ghdl_analysis(ctx, info, src, src_map, lib_cfg_map, compiled_output_files, 
         
     inputs = []
     inputs.extend(work_dir_symlink_srcs)
-    inputs.extend(compiled_srcs)
+    #inputs.extend(compiled_srcs)
     inputs.append(sym_src)
     if curr_lib_file:
         inputs.append(curr_lib_file)
@@ -265,8 +265,6 @@ def _ghdl_elaboration(ctx, info, srcs, top_ent_file, src_map, lib_cfg_map, compi
             sym_path = working_dir
         else:
             sym_path = build_path("bin", top_ent_file, src_map[src]["lib_name"])
-
-
             
         symlinked_o_files.append(create_sym_link(ctx, o_file, o_file.basename, sym_path))
         _elaboration_sym_srcs.append(create_sym_link(ctx, src, src.path, sym_path))
