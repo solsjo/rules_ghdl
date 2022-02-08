@@ -28,7 +28,7 @@ genrule(
         'mkdir bin',
         'export INSTALL_DIR=$$(pwd)/bin',
         'mkdir build',
-        'cd build',
+        'ls -la $$(pwd) && cd build',
         '../configure --with-llvm-config --prefix=$$INSTALL_DIR',
         'make',
         'make install'
