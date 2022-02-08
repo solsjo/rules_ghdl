@@ -341,7 +341,6 @@ def _ghdl_elaboration_impl(ctx):
 
     lib_cfg_map = {}
     compiled_output_files = []
-    compiled_srcs = []
 
     for src in srcs:
         o_file = _ghdl_analysis(
