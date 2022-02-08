@@ -6,15 +6,32 @@ filegroup(
         "include/**/*.*",
         "bin/ghdl-llvm/**/*.*",
     ]),
+    deps = [":ghdl_bin"],
     visibility = ["//visibility:public"],
 )
 
+ghdl_files = [
+    "bin/ghdl",
+    "bin/ghdl1-llvm",
+    "bin/ghwdump"
+]
+
 filegroup(
     name = "ghdl_bin",
-    srcs = [
-        ":bin/ghdl",
-        ":bin/ghdl1-llvm",
-        ":bin/ghwdump"
-    ],
+    srcs = ghdl_files,
     visibility = ["//visibility:public"],
+)
+
+genrule(
+    name = "ghdl-srcs",
+    outs = ghdl_files,
+    cmd = "\n".join([
+        'mkdir bin'
+        'export INSTALL_DIR=$$(pwd)/bin'
+        'mkdir build',
+        'cd build',
+        '../configure --with-llvm-config --prefix=$$INSTALL_DIR',
+        'make',
+        'make install'
+    ]),
 )
