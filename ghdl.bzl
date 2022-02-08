@@ -232,8 +232,7 @@ def _ghdl_analysis(ctx, info, src, src_map, lib_cfg_map, compiled_output_files, 
 
     # Save the output files, they will be needed later, in the
     # elaboration stage.
-    compiled_output_files.append(output_o_file)
-    compiled_srcs.append(src)
+    return output_o_file
 
 
 def _ghdl_elaboration(ctx, info, srcs, top_ent_file, src_map, lib_cfg_map, compiled_output_files):
@@ -347,7 +346,16 @@ def _ghdl_elaboration_impl(ctx):
     compiled_srcs = []
 
     for src in srcs:
-        _ghdl_analysis(ctx, info, src, src_map, lib_cfg_map, compiled_output_files, compiled_srcs)
+        o_file = _ghdl_analysis(
+            ctx,
+            info,
+            src,
+            src_map,
+            lib_cfg_map,
+            compiled_output_files,
+            compiled_srcs)
+        compiled_output_files.append(o_file)
+        compiled_srcs.append(src)
 
     elaboration_artifact = _ghdl_elaboration(ctx, info, srcs, src, src_map, lib_cfg_map, compiled_output_files)
 
