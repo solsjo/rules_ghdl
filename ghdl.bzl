@@ -278,7 +278,7 @@ def _ghdl_elaboration(ctx, info, srcs, top_ent_file, src_map, lib_cfg_map, compi
             lib_working_dir = build_path("bin", top_ent_file, name)
             sym_cf_files.append(create_sym_link(ctx, t_dep, t_dep.basename, lib_working_dir))
 
-    elaboration_artifact_name, elaboration_artifact = get_elaboration_artifact()
+    elaboration_artifact_name, elaboration_artifact = get_elaboration_artifact(ctx, working_dir)
     curr_lib_file = lib_cfg_map[lib]
 
     args = ctx.actions.args()
