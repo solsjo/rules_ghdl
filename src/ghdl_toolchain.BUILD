@@ -5,8 +5,7 @@ filegroup(
         "lib/*gh.*",
         "include/**/*.*",
         "bin/ghdl-llvm/**/*.*",
-    ]),
-    deps = [":ghdl_bin"],
+    ]) + [":ghdl_bin"],
     visibility = ["//visibility:public"],
 )
 
