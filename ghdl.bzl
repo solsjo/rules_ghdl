@@ -82,7 +82,7 @@ def create_compiled_src_symlinks_for_analysis(ctx, working_dir, compiled_srcs):
         ctx.actions.symlink(output=lib_sym_src, target_file=comp_src)
         sym_linked_srcs.append(lib_sym_src)
     return sym_linked_srcs
-   
+
 
 def _ghdl_units_impl(ctx):
     # GHDL employes a library config file, that is updated on analysis
@@ -137,7 +137,7 @@ def _ghdl_units_impl(ctx):
 
 def get_dep_libs(lib_cfg_map, unit_lib_deps):
     p_deps = {}
-        
+
     for dep_lib in unit_lib_deps:
         # always use latest version
         p_deps[dep_lib] = lib_cfg_map[dep_lib]
@@ -200,7 +200,7 @@ def _ghdl_analysis(ctx, info, src, src_map, lib_cfg_map, compiled_output_files, 
     rel_path = get_execroot_workdir_rel_path(new_lib_file)
     work_dir_symlink_srcs = create_compiled_src_symlinks_for_analysis(ctx, working_dir, compiled_srcs)
     sym_src, output_o_file = _prepare_hdl_files(ctx, working_dir, src)
-        
+
     inputs = []
     inputs.extend(work_dir_symlink_srcs)
     #inputs.extend(compiled_srcs)
@@ -208,7 +208,7 @@ def _ghdl_analysis(ctx, info, src, src_map, lib_cfg_map, compiled_output_files, 
     if curr_lib_file:
         inputs.append(curr_lib_file)
     inputs.extend(p_deps)
-        
+
     args.add("./{}{}".format(rel_path, ghdl_compiler.path))
     args.add("-a")
     args.add("--std=08")
@@ -222,7 +222,7 @@ def _ghdl_analysis(ctx, info, src, src_map, lib_cfg_map, compiled_output_files, 
         executable = ghdl_tool.path,
         tools = [ghdl_tool, ghdl_compiler] + ghdl_compiler_deps,
         arguments = [args],
-        env = {"DOCKER_IMAGE": docker, "HOME": "/", "CC": c_compiler},
+        env = {"DOCKER_IMAGE": docker, "HOME": "/", "CC": c_compiler, "PATH": "/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"},
         inputs = inputs,
         outputs = [new_lib_file, output_o_file],
     )
@@ -265,7 +265,7 @@ def _ghdl_elaboration(ctx, info, srcs, top_ent_file, src_map, lib_cfg_map, compi
             sym_path = working_dir
         else:
             sym_path = build_path("bin", top_ent_file, src_map[src]["lib_name"])
-            
+
         symlinked_o_files.append(create_sym_link(ctx, o_file, o_file.basename, sym_path))
         _elaboration_sym_srcs.append(create_sym_link(ctx, src, src.path, sym_path))
 
@@ -292,7 +292,7 @@ def _ghdl_elaboration(ctx, info, srcs, top_ent_file, src_map, lib_cfg_map, compi
     if ctx.attr.elab_flags or ctx.attr.generics:
         elab = "--elab-run"
         add_no_run = True
-    
+
     rel_path = get_execroot_workdir_rel_path(new_lib_file)
     length = len(new_lib_file.dirname.split('/'))
     args.add("./{}{}".format(rel_path, ghdl_compiler.path))
@@ -324,7 +324,7 @@ def _ghdl_elaboration(ctx, info, srcs, top_ent_file, src_map, lib_cfg_map, compi
         executable = ghdl_tool.path,
         tools = [ghdl_tool, ghdl_compiler] + ghdl_compiler_deps,
         arguments = [args],
-        env = {"DOCKER_IMAGE": docker, "HOME": "/", "CC": c_compiler},
+        env = {"DOCKER_IMAGE": docker, "HOME": "/", "CC": c_compiler, "PATH": "/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"},
         inputs = [curr_lib_file] + files_to_link + src_files + lib_cfg_map.values() + sym_cf_files,
         outputs = [new_lib_file, elaboration_artifact],
     )

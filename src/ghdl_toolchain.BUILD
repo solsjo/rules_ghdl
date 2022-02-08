@@ -12,7 +12,6 @@ filegroup(
 ghdl_files = [
     "bin/ghdl",
     "bin/ghdl1-llvm",
-    "bin/ghwdump"
 ]
 
 filegroup(
@@ -25,12 +24,16 @@ genrule(
     name = "ghdl-srcs",
     outs = ghdl_files,
     cmd = "\n".join([
-        'mkdir bin',
-        'export INSTALL_DIR=$$(pwd)/bin',
+        'export INSTALL_DIR=$$(pwd)/$(@D)',
+        'export TMP_DIR=$$(mktemp -d -t ghdl.XXXXX)',
+        'mkdir -p $$TMP_DIR',
+        'cp -R $$(pwd)/../../../../../external/ghdl_toolchain/* $$TMP_DIR',
+        'cd $$TMP_DIR',
         'mkdir build',
-        'echo "$$(pwd)" && ls -la $$(pwd)/bazel-out && cd build',
+        'cd build',
         '../configure --with-llvm-config --prefix=$$INSTALL_DIR',
         'make',
-        'make install'
+        'make install',
+        'rm -rf $$TMP_DIR',
     ]),
 )
