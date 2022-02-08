@@ -243,7 +243,7 @@ def _ghdl_elaboration(ctx, info, srcs, top_ent_file, src_map, lib_cfg_map, compi
     ghdl_compiler_deps = info.compiler_deps.files.to_list()
     c_compiler = info.c_compiler;
 
-    lib = src_map[top_ent_file]]["lib_name"]
+    lib = src_map[top_ent_file]["lib_name"]
     lib_name = lib.split("/")[-1]
     flags = src_map[top_ent_file]["flags"]
     unit_lib_deps = src_map[top_ent_file]["unit_lib_deps"]
