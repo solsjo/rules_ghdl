@@ -34,4 +34,6 @@ jobs:
       with:
         path: "~/.cache/bazel"
         key: bazel
+    - name: Install gnat
+      run: sudo apt-get install -y gnat
     - run: ./test/test_documentation.sh
