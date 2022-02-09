@@ -12,6 +12,7 @@ filegroup(
 ghdl_files = [
     "bin/ghdl",
     "bin/ghdl1-llvm",
+    "lib/ghdl",
 ]
 
 filegroup(
