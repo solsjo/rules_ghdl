@@ -226,7 +226,7 @@ def _ghdl_analysis(ctx, info, src, src_map, lib_cfg_map, compiled_output_files, 
             "DOCKER_IMAGE": docker,
             "HOME": "/",
             "CC": c_compiler,
-            "GHDL_PREFIX": "{}/../lib/src".format(ghdl_compiler.path)
+            "GHDL_PREFIX": "{}/../lib/src".format(ghdl_compiler.path),
             "PATH": "/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"},
         inputs = inputs,
         outputs = [new_lib_file, output_o_file],
