@@ -216,6 +216,8 @@ def _ghdl_analysis(ctx, info, src, src_map, lib_cfg_map, compiled_output_files, 
     args.add_all(flags)
     args.add("--work={}".format(lib_name))
     args.add_all(p_deps, format_each="-P{}%s".format(rel_path), map_each=get_dir)
+    args.sdd("--PREFIX=./{}{}/../../lib/ghdl".format(rel_path, ghdl_compiler.path))
+    
     args.add(src.path)
     ctx.actions.run(
         mnemonic = "ghdlAnalysis",
@@ -226,7 +228,7 @@ def _ghdl_analysis(ctx, info, src, src_map, lib_cfg_map, compiled_output_files, 
             "DOCKER_IMAGE": docker,
             "HOME": "/",
             "CC": c_compiler,
-            "GHDL_PREFIX": "{}{}/../../lib/ghdl/src/std/{}".format(rel_path, ghdl_compiler.path, "v08"),
+            #"GHDL_PREFIX": "{}{}/../../lib/ghdl/src/std/{}".format(rel_path, ghdl_compiler.path, "v08"),
             "PATH": "/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
         },
         inputs = inputs,
@@ -308,7 +310,8 @@ def _ghdl_elaboration(ctx, info, srcs, top_ent_file, src_map, lib_cfg_map, compi
     args.add("--ieee=synopsys --warn-no-vital-generic")
     args.add("--work={}".format(lib_name))
     args.add_all(sym_cf_files, format_each="-P" + "../" * length + "%s", map_each=get_dir)
-
+    args.sdd("--PREFIX=./{}{}/../../lib/ghdl".format(rel_path, ghdl_compiler.path))
+    
     args.add(ctx.attr.entity_name)
     if ctx.attr.arch:
         args.add(ctx.attr.arch)
@@ -334,7 +337,7 @@ def _ghdl_elaboration(ctx, info, srcs, top_ent_file, src_map, lib_cfg_map, compi
             "DOCKER_IMAGE": docker,
             "HOME": "/",
             "CC": c_compiler,
-            "GHDL_PREFIX": "{}{}/../../lib/ghdl/src/std/{}".format(rel_path, ghdl_compiler.path, "v08"),
+            #"GHDL_PREFIX": "{}{}/../../lib/ghdl/src/std/{}".format(rel_path, ghdl_compiler.path, "v08"),
             "PATH": "/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
         },
         inputs = [curr_lib_file] + files_to_link + src_files + lib_cfg_map.values() + sym_cf_files,
