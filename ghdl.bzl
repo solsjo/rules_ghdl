@@ -226,8 +226,9 @@ def _ghdl_analysis(ctx, info, src, src_map, lib_cfg_map, compiled_output_files, 
             "DOCKER_IMAGE": docker,
             "HOME": "/",
             "CC": c_compiler,
-            "GHDL_PREFIX": "{}/../lib/src".format(ghdl_compiler.path),
-            "PATH": "/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"},
+            "GHDL_PREFIX": "{}{}/../../lib/ghdl/src/{}".format(rel_path, ghdl_compiler.path, "v08"),
+            "PATH": "/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
+        },
         inputs = inputs,
         outputs = [new_lib_file, output_o_file],
     )
@@ -329,7 +330,13 @@ def _ghdl_elaboration(ctx, info, srcs, top_ent_file, src_map, lib_cfg_map, compi
         executable = ghdl_tool.path,
         tools = [ghdl_tool, ghdl_compiler] + ghdl_compiler_deps,
         arguments = [args],
-        env = {"DOCKER_IMAGE": docker, "HOME": "/", "CC": c_compiler, "PATH": "/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"},
+        env = {
+            "DOCKER_IMAGE": docker,
+            "HOME": "/",
+            "CC": c_compiler,
+            "GHDL_PREFIX": "{}{}/../../lib/ghdl/src/{}".format(rel_path, ghdl_compiler.path, "v08"),
+            "PATH": "/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
+        },
         inputs = [curr_lib_file] + files_to_link + src_files + lib_cfg_map.values() + sym_cf_files,
         outputs = [new_lib_file, elaboration_artifact],
     )
