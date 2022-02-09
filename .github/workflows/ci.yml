@@ -36,4 +36,6 @@ jobs:
         key: bazel
     - name: Install gnat
       run: sudo apt-get install -y gnat
+    - name: Install llvm
+      run: sudo apt-get install -y llvm
     - run: ./test/test_documentation.sh
