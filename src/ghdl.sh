@@ -30,6 +30,8 @@ if [ -n "$DOCKER_IMAGE" ]; then
     "$DOCKER_IMAGE" sh -c "$ghdl_bin $ghdl_args"
 else
 
+  export GHDL_PREFIX="$(dirname $(realpath $ghdl_bin))/../lib/ghdl"
+
   "$ghdl_bin" ${ghdl_args[@]}
 
 fi
