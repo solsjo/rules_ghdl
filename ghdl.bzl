@@ -177,8 +177,8 @@ def get_elaboration_artifact(ctx, working_dir):
 def _ghdl_analysis(ctx, info, src, src_map, lib_cfg_map, compiled_output_files, compiled_srcs):
     ghdl_tool = info.wrapper.files.to_list()[0]
     docker = info.docker;
-    ghdl_compiler = info.compiler_path.files.to_list()[0]
-    ghdl_compiler_deps = info.compiler_deps.files.to_list()
+    ghdl_compiler = info.ghdl_bin.files.to_list()[0]
+    ghdl_compiler_deps = info.ghdl_deps.files.to_list()
     c_compiler = info.c_compiler;
     args = ctx.actions.args()
 
@@ -244,8 +244,8 @@ def _ghdl_analysis(ctx, info, src, src_map, lib_cfg_map, compiled_output_files, 
 def _ghdl_elaboration(ctx, info, srcs, top_ent_file, src_map, lib_cfg_map, compiled_output_files):
     ghdl_tool = info.wrapper.files.to_list()[0]
     docker = info.docker;
-    ghdl_compiler = info.compiler_path.files.to_list()[0]
-    ghdl_compiler_deps = info.compiler_deps.files.to_list()
+    ghdl_compiler = info.ghdl_bin.files.to_list()[0]
+    ghdl_compiler_deps = info.ghdl_deps.files.to_list()
     c_compiler = info.c_compiler;
 
     lib = src_map[top_ent_file]["lib_name"]
