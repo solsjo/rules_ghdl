@@ -2,12 +2,6 @@ workspace(name = "rules_ghdl")
 
 load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
 
-#new_local_repository(
-#     name = "ghdl_toolchain",
-#     path = "/home/runner/work/_temp/ghdl",
-#     build_file = "@rules_ghdl//src:ghdl_toolchain.BUILD",
-#)
-
 load("@rules_ghdl//:load_rules_ghdl_deps.bzl", "load_rules_ghdl_deps")
 load_rules_ghdl_deps()
 load("@rules_ghdl//:rules_ghdl_deps.bzl", "rules_ghdl_deps")
