@@ -300,14 +300,14 @@ def _ghdl_elaboration(ctx, info, srcs, top_ent_file, src_map, lib_cfg_map, compi
         add_no_run = True
 
     rel_path = get_execroot_workdir_rel_path(new_lib_file)
-    length = len(new_lib_file.dirname.split('/'))
+
     args.add("./{}{}".format(rel_path, ghdl_compiler.path))
     args.add(elab)
     args.add("-o {}".format(elaboration_artifact_name))
     args.add("--std=08")
     args.add("--ieee=synopsys --warn-no-vital-generic")
     args.add("--work={}".format(lib_name))
-    args.add_all(sym_cf_files, format_each="-P" + "../" * length + "%s", map_each=get_dir)
+    args.add_all(sym_cf_files, format_each="-P{}%s".format(rel_path), map_each=get_dir)
     args.add(ctx.attr.entity_name)
     if ctx.attr.arch:
         args.add(ctx.attr.arch)
