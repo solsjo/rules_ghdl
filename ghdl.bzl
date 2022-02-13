@@ -73,11 +73,12 @@ def _prepare_hdl_files(ctx, working_dir, src):
     return sym_src, output_o_file
 
 
-def create_compiled_src_symlinks_for_analysis(ctx, working_dir, compiled_srcs):
+def create_compiled_src_symlinks_for_analysis(ctx, working_dir, compiled_srcs, srcs, src_map):
     sym_linked_srcs = []
     for i in range(len(compiled_srcs)):
         comp_src = compiled_srcs[i]
-        lib = src_map[comp_src.basename]["lib_name"]
+        src = srcs[i]
+        lib = src_map[src]["lib_name"]
         lib_name = lib.split("/")[-1]
         n_working_dir = build_path("objs", src, lib_name)
         _lib_sym_src_path = "{}/{}".format(n_working_dir, comp_src.path)
@@ -202,7 +203,7 @@ def _ghdl_analysis(ctx, info, src, src_map, lib_cfg_map, compiled_output_files, 
         curr_lib_file,
     )
     rel_path = get_execroot_workdir_rel_path(new_lib_file)
-    work_dir_symlink_srcs = create_compiled_src_symlinks_for_analysis(ctx, working_dir, compiled_srcs)
+    work_dir_symlink_srcs = create_compiled_src_symlinks_for_analysis(ctx, working_dir, compiled_srcs, srcs, src_map)
     sym_src, output_o_file = _prepare_hdl_files(ctx, working_dir, src)
 
     inputs = []
