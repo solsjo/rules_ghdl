@@ -77,7 +77,11 @@ def create_compiled_src_symlinks_for_analysis(ctx, working_dir, compiled_srcs):
     sym_linked_srcs = []
     for i in range(len(compiled_srcs)):
         comp_src = compiled_srcs[i]
-        _lib_sym_src_path = "{}/{}".format(working_dir, comp_src.path)
+        lib = src_map[comp_src.basename]["lib_name"]
+        lib_name = lib.split("/")[-1]
+        n_working_dir = build_path("objs", src, lib_name)
+        _lib_sym_src_path = "{}/{}".format(n_working_dir, comp_src.path)
+        print(":::::{}".format(_lib_sym_src_path))
         lib_sym_src = ctx.actions.declare_file(_lib_sym_src_path)
         ctx.actions.symlink(output=lib_sym_src, target_file=comp_src)
         sym_linked_srcs.append(lib_sym_src)
