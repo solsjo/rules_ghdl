@@ -280,7 +280,7 @@ def _ghdl_elaboration(ctx, info, srcs, top_ent_file, src_map, lib_cfg_map, compi
         if name != lib:
             lib_working_dir = build_path("bin", top_ent_file, name)
             sym_cf_f = create_sym_link(ctx, t_dep, t_dep.basename, lib_working_dir)
-            print("===={}".format(sym_cf_f.path))
+            print("===={}\n\===={}\n===={}".format(sym_cf_f.path, t_dep.path, lib_working_dir))
             sym_cf_files.append(sym_cf_f)
 
     elaboration_artifact_name, elaboration_artifact = get_elaboration_artifact(ctx, working_dir)
@@ -310,6 +310,9 @@ def _ghdl_elaboration(ctx, info, srcs, top_ent_file, src_map, lib_cfg_map, compi
     args.add("--ieee=synopsys --warn-no-vital-generic")
     args.add("--work={}".format(lib_name))
     args.add_all(sym_cf_files, format_each="-P{}%s".format(rel_path), map_each=get_dir)
+    print(">>>>{}".format(str(sym_cf_files)))
+    print(">>>>{}".format(str(p_deps)))
+    print(">>>>{}".format(str(args)))
     args.add(ctx.attr.entity_name)
     if ctx.attr.arch:
         args.add(ctx.attr.arch)
