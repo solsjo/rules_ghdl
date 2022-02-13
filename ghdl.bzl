@@ -307,6 +307,7 @@ def _ghdl_elaboration(ctx, info, srcs, top_ent_file, src_map, lib_cfg_map, compi
     args.add("--std=08")
     args.add("--ieee=synopsys --warn-no-vital-generic")
     args.add("--work={}".format(lib_name))
+    print(sym_cf_files)
     args.add_all(sym_cf_files, format_each="-P{}%s".format(rel_path), map_each=get_dir)
     args.add(ctx.attr.entity_name)
     if ctx.attr.arch:
