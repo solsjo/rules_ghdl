@@ -120,7 +120,7 @@ def create_lib_file_sym_links(ctx, curr_lib, p_deps, prefix, src):
 
     for name, t_dep in p_deps.items():
         if name != curr_lib:
-            lib_working_dir = build_path(prefix, src.basename, name)
+            lib_working_dir = build_path(prefix, src, name)
             sym_cf_f = create_sym_link(ctx, t_dep, t_dep.basename, lib_working_dir)
             sym_cf_files.append(sym_cf_f)
 
