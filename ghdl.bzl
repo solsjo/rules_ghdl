@@ -273,6 +273,7 @@ def _ghdl_analysis(ctx, info, src, src_map, lib_cfg_map, compiled_output_files, 
     args.add_all(sym_cf_files, format_each="-P{}%s".format(rel_path), map_each=get_dir)
 
     args.add(src.path)
+    print("===={}".format(str(inputs)))
     ctx.actions.run(
         mnemonic = "ghdlAnalysis",
         executable = ghdl_tool.path,
