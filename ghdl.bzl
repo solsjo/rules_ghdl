@@ -262,7 +262,7 @@ def _ghdl_analysis(ctx, info, src, src_map, lib_cfg_map, compiled_output_files, 
     inputs.append(sym_src)
     if curr_lib_file:
         inputs.append(curr_lib_file)
-    inputs.extend(p_deps)
+    inputs.extend(sym_cf_files)
 
     args.add("./{}{}".format(rel_path, ghdl_compiler.path))
     args.add("-a")
