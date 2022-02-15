@@ -213,11 +213,11 @@ def _ghdl_analysis(ctx, info, src, src_map, lib_cfg_map, compiled_output_files, 
     sym_cf_files = []
 
     for name, t_dep in p_deps.items():
-    if name != lib:
-        lib_working_dir = build_path("objs", src.basename, name)
-        sym_cf_f = create_sym_link(ctx, t_dep, t_dep.basename, lib_working_dir)
-        print("===={}\n===={}\n===={}".format(sym_cf_f.path, t_dep.path, lib_working_dir))
-        sym_cf_files.append(sym_cf_f)
+        if name != lib:
+            lib_working_dir = build_path("objs", src.basename, name)
+            sym_cf_f = create_sym_link(ctx, t_dep, t_dep.basename, lib_working_dir)
+            print("===={}\n===={}\n===={}".format(sym_cf_f.path, t_dep.path, lib_working_dir))
+            sym_cf_files.append(sym_cf_f)
 
     inputs = []
     inputs.extend(work_dir_symlink_srcs)
