@@ -83,8 +83,7 @@ def create_compiled_src_symlinks_for_analysis(ctx, src_map, curr_lib, working_di
             _lib_sym_src_path = "{}/{}".format(working_dir, comp_src.path)
         else:
             lib = src_map[src]["lib_name"]
-            lib_name = lib.split("/")[-1]
-            lib_working_dir = build_path("objs", file, lib_name)
+            lib_working_dir = build_path("objs", file, lib)
             _lib_sym_src_path = "{}/{}".format(lib_working_dir, comp_src.path)
 
         lib_sym_src = ctx.actions.declare_file(_lib_sym_src_path)
@@ -273,7 +272,7 @@ def _ghdl_analysis(ctx, info, src, src_map, lib_cfg_map, compiled_output_files, 
     args.add_all(sym_cf_files, format_each="-P{}%s".format(rel_path), map_each=get_dir)
 
     args.add(src.path)
-    print("===={}".format(str(inputs)))
+
     ctx.actions.run(
         mnemonic = "ghdlAnalysis",
         executable = ghdl_tool.path,
