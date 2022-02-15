@@ -115,11 +115,11 @@ def create_compiled_src_symlinks_for_elaboration(ctx, src_map, curr_lib, working
     return symlinked_o_files, _elaboration_sym_srcs
 
 
-def create_lib_file_sym_links(ctx, p_deps, prefix, src):
+def create_lib_file_sym_links(ctx, curr_lib, p_deps, prefix, src):
     sym_cf_files = []
 
     for name, t_dep in p_deps.items():
-        if name != lib:
+        if name != curr_lib:
             lib_working_dir = build_path(prefix, src.basename, name)
             sym_cf_f = create_sym_link(ctx, t_dep, t_dep.basename, lib_working_dir)
             sym_cf_files.append(sym_cf_f)
@@ -254,7 +254,7 @@ def _ghdl_analysis(ctx, info, src, src_map, lib_cfg_map, compiled_output_files, 
         src
     )
     sym_src, output_o_file = _prepare_hdl_files(ctx, working_dir, src)
-    sym_cf_files = create_lib_file_sym_links(ctx, p_deps, "objs", src)
+    sym_cf_files = create_lib_file_sym_links(ctx, lib, p_deps, "objs", src)
 
     inputs = []
     inputs.extend(work_dir_symlink_srcs)
@@ -321,7 +321,7 @@ def _ghdl_elaboration(ctx, info, srcs, top_ent_file, src_map, lib_cfg_map, compi
         top_ent_file
     )
 
-    sym_cf_files = create_lib_file_sym_links(ctx, p_deps, "bin", top_ent_file)
+    sym_cf_files = create_lib_file_sym_links(ctx, lib, p_deps, "bin", top_ent_file)
 
     elaboration_artifact_name, elaboration_artifact = get_elaboration_artifact(ctx, working_dir)
     curr_lib_file = lib_cfg_map[lib]
