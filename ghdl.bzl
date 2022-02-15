@@ -197,7 +197,7 @@ def _ghdl_analysis(ctx, info, src, src_map, lib_cfg_map, compiled_output_files, 
     flags = src_map[src]["flags"]
     unit_lib_deps = src_map[src]["unit_lib_deps"]
 
-    p_deps = get_dep_libs(lib_cfg_map, unit_lib_deps).values()
+    p_deps = get_dep_libs(lib_cfg_map, unit_lib_deps)
     curr_lib_file = lib_cfg_map.get(lib, default=None)
     working_dir = build_path("objs", src, lib_name)
     new_lib_file = _prepare_cfg_file_content(
