@@ -210,7 +210,7 @@ def _ghdl_analysis(ctx, info, src, src_map, lib_cfg_map, compiled_output_files, 
     rel_path = get_execroot_workdir_rel_path(new_lib_file)
     work_dir_symlink_srcs = create_compiled_src_symlinks_for_analysis(ctx, src_map, lib, working_dir, compiled_srcs)
     sym_src, output_o_file = _prepare_hdl_files(ctx, working_dir, src)
-    syn_cf_files = []
+    sym_cf_files = []
 
     for name, t_dep in p_deps.items():
     if name != lib:
