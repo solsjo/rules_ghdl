@@ -73,11 +73,20 @@ def _prepare_hdl_files(ctx, working_dir, src):
     return sym_src, output_o_file
 
 
-def create_compiled_src_symlinks_for_analysis(ctx, working_dir, compiled_srcs):
+def create_compiled_src_symlinks_for_analysis(ctx, src_map, curr_lib, working_dir, compiled_srcs, srcs):
     sym_linked_srcs = []
     for i in range(len(compiled_srcs)):
         comp_src = compiled_srcs[i]
-        _lib_sym_src_path = "{}/{}".format(working_dir, comp_src.path)
+        src = srcs[i]
+
+        if src_map[src]["lib_name"] == curr_lib:
+            _lib_sym_src_path = "{}/{}".format(working_dir, comp_src.path)
+        else:
+            lib = src_map[src]["lib_name"]
+            lib_name = lib.split("/")[-1]
+            lib_working_dir = build_path("objs", src, lib_name)
+            _lib_sym_src_path = "{}/{}".format(lib_working_dir, comp_src.path)
+
         print(":::::{}".format(_lib_sym_src_path))
         lib_sym_src = ctx.actions.declare_file(_lib_sym_src_path)
         ctx.actions.symlink(output=lib_sym_src, target_file=comp_src)
@@ -199,8 +208,16 @@ def _ghdl_analysis(ctx, info, src, src_map, lib_cfg_map, compiled_output_files, 
         curr_lib_file,
     )
     rel_path = get_execroot_workdir_rel_path(new_lib_file)
-    work_dir_symlink_srcs = create_compiled_src_symlinks_for_analysis(ctx, working_dir, compiled_srcs)
+    work_dir_symlink_srcs = create_compiled_src_symlinks_for_analysis(ctx, src_map, lib, working_dir, compiled_srcs)
     sym_src, output_o_file = _prepare_hdl_files(ctx, working_dir, src)
+    syn_cf_files = []
+
+    for name, t_dep in p_deps.items():
+    if name != lib:
+        lib_working_dir = build_path("objs", src.basename, name)
+        sym_cf_f = create_sym_link(ctx, t_dep, t_dep.basename, lib_working_dir)
+        print("===={}\n===={}\n===={}".format(sym_cf_f.path, t_dep.path, lib_working_dir))
+        sym_cf_files.append(sym_cf_f)
 
     inputs = []
     inputs.extend(work_dir_symlink_srcs)
@@ -216,7 +233,7 @@ def _ghdl_analysis(ctx, info, src, src_map, lib_cfg_map, compiled_output_files, 
     args.add("--ieee=synopsys --warn-no-vital-generic")
     args.add_all(flags)
     args.add("--work={}".format(lib_name))
-    args.add_all(p_deps, format_each="-P{}%s".format(rel_path), map_each=get_dir)
+    args.add_all(sym_cf_files, format_each="-P{}%s".format(rel_path), map_each=get_dir)
 
     args.add(src.path)
     ctx.actions.run(
