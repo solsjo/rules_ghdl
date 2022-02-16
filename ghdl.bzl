@@ -437,13 +437,12 @@ ghdl_library = rule(
     implementation = _ghdl_library_impl,
 )
 
-# TODO: Should probably be renamed to ghdl_elaboration
 ghdl_elaboration = rule(
     implementation = _ghdl_elaboration_impl,
     attrs = {
         "entity_name": attr.string(mandatory=True),
         "arch": attr.string(mandatory=False),
-        # TODO: Remove sources from testbench rule
+        # TODO: use only a single top level file
         "srcs": attr.label(allow_single_file = [".vhd", ".v"], mandatory = True),
         "deps": attr.label_list(),
 
