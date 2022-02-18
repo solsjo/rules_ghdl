@@ -24,18 +24,15 @@ jobs:
 
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
+    - name: Install gnat
+      run: sudo apt-get install -y gnat
+    - name: Install llvm
+      run: sudo apt-get install -y llvm
     - uses: actions/checkout@v2
     - uses: mishas/setup-bazelisk-action@v1
-    - uses: ghdl/setup-ghdl-ci@nightly
-      with:
-        backend: llvm
     - name: Mount bazel cache  # Optional
       uses: actions/cache@v1
       with:
         path: "~/.cache/bazel"
         key: bazel
-    - name: Install gnat
-      run: sudo apt-get install -y gnat
-    - name: Install llvm
-      run: sudo apt-get install -y llvm
     - run: ./test/test_documentation.sh

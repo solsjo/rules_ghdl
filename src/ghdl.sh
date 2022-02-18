@@ -8,7 +8,7 @@ work_dir=${3}
 ghdl_bin=${4}
 shift 4
 
-readarray -td, ghdl_args <<<"$@"
+readarray -td\# ghdl_args <<<"$@"
 
 if [ -n "$old_lib_file" ]; then
   cp "$old_lib_file" "$new_lib_file"
@@ -27,7 +27,7 @@ if [ -n "$DOCKER_IMAGE" ]; then
     --user "$(id -u):$(id -g)" \
     --volume $output_base_path:$output_base_path \
     --workdir "$PWD" \
-    "$DOCKER_IMAGE" sh -c "$ghdl_bin $ghdl_args"
+    "$DOCKER_IMAGE" sh -c "$ghdl_bin ${ghdl_args[@]}"
 else
 
   export GHDL_PREFIX="$(dirname $(realpath $ghdl_bin))/../lib/ghdl"

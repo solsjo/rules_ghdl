@@ -73,15 +73,57 @@ def _prepare_hdl_files(ctx, working_dir, src):
     return sym_src, output_o_file
 
 
-def create_compiled_src_symlinks_for_analysis(ctx, working_dir, compiled_srcs):
+def create_compiled_src_symlinks_for_analysis(ctx, src_map, curr_lib, working_dir, compiled_srcs, srcs, file):
     sym_linked_srcs = []
     for i in range(len(compiled_srcs)):
         comp_src = compiled_srcs[i]
-        _lib_sym_src_path = "{}/{}".format(working_dir, comp_src.path)
+        src = srcs[i]
+
+        if src_map[src]["lib_name"] == curr_lib:
+            _lib_sym_src_path = "{}/{}".format(working_dir, comp_src.path)
+        else:
+            lib = src_map[src]["lib_name"]
+            lib_working_dir = build_path("objs", file, lib)
+            _lib_sym_src_path = "{}/{}".format(lib_working_dir, comp_src.path)
+
         lib_sym_src = ctx.actions.declare_file(_lib_sym_src_path)
         ctx.actions.symlink(output=lib_sym_src, target_file=comp_src)
         sym_linked_srcs.append(lib_sym_src)
     return sym_linked_srcs
+
+
+def create_compiled_src_symlinks_for_elaboration(ctx, src_map, curr_lib, working_dir, compiled_output_files, srcs, file):
+    symlinked_o_files = []
+    _elaboration_sym_srcs = []
+    for i in range(len(srcs)):
+        # Check if src file belongs to current lib, if so, create symlinks in current dir,
+        # else create symlinks to library dir for that library in bin folder, as well as
+        # the cf file and change -P to point there too?
+        # Or create symlinks into the same lib base dir as where the srcs are stored in bin
+        src = srcs[i]
+        o_file = compiled_output_files[i]
+
+        if src_map[src]["lib_name"] == curr_lib:
+            sym_path = working_dir
+        else:
+            sym_path = build_path("bin", file, src_map[src]["lib_name"])
+
+        symlinked_o_files.append(create_sym_link(ctx, o_file, o_file.basename, sym_path))
+        _elaboration_sym_srcs.append(create_sym_link(ctx, src, src.path, sym_path))
+
+    return symlinked_o_files, _elaboration_sym_srcs
+
+
+def create_lib_file_sym_links(ctx, curr_lib, p_deps, prefix, src):
+    sym_cf_files = []
+
+    for name, t_dep in p_deps.items():
+        if name != curr_lib:
+            lib_working_dir = build_path(prefix, src, name)
+            sym_cf_f = create_sym_link(ctx, t_dep, t_dep.basename, lib_working_dir)
+            sym_cf_files.append(sym_cf_f)
+
+    return sym_cf_files
 
 
 def _ghdl_units_impl(ctx):
@@ -135,6 +177,7 @@ def _ghdl_units_impl(ctx):
         GHDLFiles(transitive_sources=trans_srcs, lib_name=lib_id, src_map=src_map)
     ]
 
+
 def get_dep_libs(lib_cfg_map, unit_lib_deps):
     p_deps = {}
 
@@ -144,6 +187,7 @@ def get_dep_libs(lib_cfg_map, unit_lib_deps):
 
     return p_deps
 
+
 def build_source_map(deps):
     src_map = {}
     for dep in deps:
@@ -151,6 +195,7 @@ def build_source_map(deps):
             if src not in src_map:
                 src_map[src] = settings
     return src_map
+
 
 def get_srcs(ctx):
     trans_srcs = get_transitive_srcs(
@@ -174,7 +219,7 @@ def get_elaboration_artifact(ctx, working_dir):
     return elaboration_artifact_name, elaboration_artifact
 
 
-def _ghdl_analysis(ctx, info, src, src_map, lib_cfg_map, compiled_output_files, compiled_srcs):
+def _ghdl_analysis(ctx, info, src, src_map, lib_cfg_map, compiled_output_files, compiled_srcs, srcs):
     ghdl_tool = info.wrapper.files.to_list()[0]
     docker = info.docker;
     ghdl_compiler = info.ghdl_bin.files.to_list()[0]
@@ -187,7 +232,7 @@ def _ghdl_analysis(ctx, info, src, src_map, lib_cfg_map, compiled_output_files, 
     flags = src_map[src]["flags"]
     unit_lib_deps = src_map[src]["unit_lib_deps"]
 
-    p_deps = get_dep_libs(lib_cfg_map, unit_lib_deps).values()
+    p_deps = get_dep_libs(lib_cfg_map, unit_lib_deps)
     curr_lib_file = lib_cfg_map.get(lib, default=None)
     working_dir = build_path("objs", src, lib_name)
     new_lib_file = _prepare_cfg_file_content(
@@ -198,16 +243,25 @@ def _ghdl_analysis(ctx, info, src, src_map, lib_cfg_map, compiled_output_files, 
         curr_lib_file,
     )
     rel_path = get_execroot_workdir_rel_path(new_lib_file)
-    work_dir_symlink_srcs = create_compiled_src_symlinks_for_analysis(ctx, working_dir, compiled_srcs)
+    work_dir_symlink_srcs = create_compiled_src_symlinks_for_analysis(
+        ctx,
+        src_map,
+        lib,
+        working_dir,
+        compiled_srcs,
+        srcs,
+        src
+    )
     sym_src, output_o_file = _prepare_hdl_files(ctx, working_dir, src)
+    sym_cf_files = create_lib_file_sym_links(ctx, lib, p_deps, "objs", src)
 
     inputs = []
     inputs.extend(work_dir_symlink_srcs)
-    #inputs.extend(compiled_srcs)
+    inputs.extend(compiled_srcs)
     inputs.append(sym_src)
     if curr_lib_file:
         inputs.append(curr_lib_file)
-    inputs.extend(p_deps)
+    inputs.extend(sym_cf_files)
 
     args.add("./{}{}".format(rel_path, ghdl_compiler.path))
     args.add("-a")
@@ -215,9 +269,10 @@ def _ghdl_analysis(ctx, info, src, src_map, lib_cfg_map, compiled_output_files, 
     args.add("--ieee=synopsys --warn-no-vital-generic")
     args.add_all(flags)
     args.add("--work={}".format(lib_name))
-    args.add_all(p_deps, format_each="-P{}%s".format(rel_path), map_each=get_dir)
+    args.add_all(sym_cf_files, format_each="-P{}%s".format(rel_path), map_each=get_dir)
 
     args.add(src.path)
+
     ctx.actions.run(
         mnemonic = "ghdlAnalysis",
         executable = ghdl_tool.path,
@@ -255,31 +310,18 @@ def _ghdl_elaboration(ctx, info, srcs, top_ent_file, src_map, lib_cfg_map, compi
 
     p_deps = get_dep_libs(lib_cfg_map, unit_lib_deps)
     working_dir = build_path("bin", top_ent_file, lib_name)
-    sym_cf_files = []
 
-    symlinked_o_files = []
-    _elaboration_sym_srcs = []
-    for i in range(len(srcs)):
-        # Check if src file belongs to current lib, if so, create symlinks in current dir,
-        # else create symlinks to library dir for that library in bin folder, as well as
-        # the cf file and change -P to point there too?
-        # Or create symlinks into the same lib base dir as where the srcs are stored in bin
-        src = srcs[i]
-        o_file = compiled_output_files[i]
+    symlinked_o_files, _elaboration_sym_srcs = create_compiled_src_symlinks_for_elaboration(
+        ctx,
+        src_map,
+        lib,
+        working_dir,
+        compiled_output_files,
+        srcs,
+        top_ent_file
+    )
 
-        if src_map[src]["lib_name"] == lib:
-            sym_path = working_dir
-        else:
-            sym_path = build_path("bin", top_ent_file, src_map[src]["lib_name"])
-
-        symlinked_o_files.append(create_sym_link(ctx, o_file, o_file.basename, sym_path))
-        _elaboration_sym_srcs.append(create_sym_link(ctx, src, src.path, sym_path))
-
-
-    for name, t_dep in p_deps.items():
-        if name != lib:
-            lib_working_dir = build_path("bin", top_ent_file, name)
-            sym_cf_files.append(create_sym_link(ctx, t_dep, t_dep.basename, lib_working_dir))
+    sym_cf_files = create_lib_file_sym_links(ctx, lib, p_deps, "bin", top_ent_file)
 
     elaboration_artifact_name, elaboration_artifact = get_elaboration_artifact(ctx, working_dir)
     curr_lib_file = lib_cfg_map[lib]
@@ -300,14 +342,15 @@ def _ghdl_elaboration(ctx, info, srcs, top_ent_file, src_map, lib_cfg_map, compi
         add_no_run = True
 
     rel_path = get_execroot_workdir_rel_path(new_lib_file)
-    length = len(new_lib_file.dirname.split('/'))
+
     args.add("./{}{}".format(rel_path, ghdl_compiler.path))
     args.add(elab)
     args.add("-o {}".format(elaboration_artifact_name))
     args.add("--std=08")
     args.add("--ieee=synopsys --warn-no-vital-generic")
     args.add("--work={}".format(lib_name))
-    args.add_all(sym_cf_files, format_each="-P" + "../" * length + "%s", map_each=get_dir)
+    args.add_all(sym_cf_files, format_each="-P{}%s".format(rel_path), map_each=get_dir)
+
     args.add(ctx.attr.entity_name)
     if ctx.attr.arch:
         args.add(ctx.attr.arch)
@@ -361,7 +404,8 @@ def _ghdl_elaboration_impl(ctx):
             src_map,
             lib_cfg_map,
             compiled_output_files,
-            compiled_srcs)
+            compiled_srcs,
+            srcs)
         compiled_output_files.append(o_file)
         compiled_srcs.append(src)
 
@@ -393,13 +437,12 @@ ghdl_library = rule(
     implementation = _ghdl_library_impl,
 )
 
-# TODO: Should probably be renamed to ghdl_elaboration
 ghdl_elaboration = rule(
     implementation = _ghdl_elaboration_impl,
     attrs = {
         "entity_name": attr.string(mandatory=True),
         "arch": attr.string(mandatory=False),
-        # TODO: Remove sources from testbench rule
+        # TODO: use only a single top level file
         "srcs": attr.label(allow_single_file = [".vhd", ".v"], mandatory = True),
         "deps": attr.label_list(),
 

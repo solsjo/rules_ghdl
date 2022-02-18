@@ -22,6 +22,12 @@ filegroup(
 )
 
 filegroup(
+    name = "ghdl_bin_ghdl_dir",
+    srcs = ["bin"],
+    visibility = ["//visibility:public"],
+)
+
+filegroup(
     name = "ghdl_bin",
     srcs = ghdl_files,
     visibility = ["//visibility:public"],
