@@ -483,7 +483,7 @@ def ghdl_elab(
         generics = generics
     )
     
-    filegroup(
+    native.filegroup(
         name = name,
         srcs = [":" + name + "_elaboration"],
         visibility = ["//visibility:public"],
