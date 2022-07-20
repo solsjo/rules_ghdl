@@ -16,6 +16,6 @@ ghdl_elab(
     entity_name = "counter_tb",
     arch = "testbench",
     top = ":testbench/counter_tb.vhd",
-    lib = ":ghdl_example_lib"
+    lib = ":ghdl_example_lib",
     deps = [":counter"]
 )
