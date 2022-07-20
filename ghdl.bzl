@@ -412,7 +412,7 @@ def _ghdl_elaboration_impl(ctx):
     elaboration_artifact = _ghdl_elaboration(ctx, info, srcs, src, src_map, lib_cfg_map, compiled_output_files)
 
     return [
-        DefaultInfo(files = depset([elaboration_artifact])),
+        DefaultInfo(files = depset([elaboration_artifact] + ctx.files.srcs)),
         GHDLFiles(transitive_sources=srcs, outs=[elaboration_artifact])
     ]
 
@@ -427,6 +427,7 @@ ghdl_units = rule(
     },
 )
 
+
 def _ghdl_library_impl(ctx):
     return [
         GHDLFiles(lib_name=ctx.label.name)
@@ -436,6 +437,7 @@ def _ghdl_library_impl(ctx):
 ghdl_library = rule(
     implementation = _ghdl_library_impl,
 )
+
 
 ghdl_elaboration = rule(
     implementation = _ghdl_elaboration_impl,
@@ -448,7 +450,41 @@ ghdl_elaboration = rule(
 
         "elab_flags" : attr.string_list(mandatory=False, allow_empty=True),
         "generics" : attr.string_list(mandatory=False, allow_empty=True), # Should be dict
-
     },
     toolchains = ["@rules_ghdl//:ghdl_toolchain_type"]
 )
+
+def ghdl_elab(
+    name,
+    entity_name,
+    top,
+    lib,
+    arch = "",
+    deps = [],
+    elab_flags = [],
+    generics = []
+):
+    ghdl_units(
+        name = name + "_top_level_unit",
+        srcs = [
+            top,
+        ],
+        deps = deps,
+        lib = lib
+    )
+    
+    ghdl_elaboration(
+        name = name + "_elaboration",
+        entity_name = entity_name,
+        arch = arch,
+        srcs = top,
+        deps = [":" + name + "_top_level_unit"] + deps,
+        elab_flags = elab_flags,
+        generics = generics
+    )
+    
+    filegroup(
+        name = name,
+        srcs = [":" + name + "_elaboration"],
+        visibility = ["//visibility:public"],
+    )
