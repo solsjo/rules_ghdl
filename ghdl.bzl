@@ -412,7 +412,7 @@ def _ghdl_elaboration_impl(ctx):
     elaboration_artifact = _ghdl_elaboration(ctx, info, srcs, src, src_map, lib_cfg_map, compiled_output_files)
 
     return [
-        DefaultInfo(files = depset([elaboration_artifact] + ctx.files.srcs)),
+        DefaultInfo(files = depset([elaboration_artifact])),
         GHDLFiles(transitive_sources=srcs, outs=[elaboration_artifact])
     ]
 
