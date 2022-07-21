@@ -476,18 +476,12 @@ def ghdl_elab(
     )
     
     ghdl_elaboration(
-        name = name + "_elaboration",
+        name = name,
         entity_name = entity_name,
         arch = arch,
         srcs = top,
         deps = [":" + name + "_top_level_unit"] + deps,
         elab_flags = elab_flags,
         generics = generics,
-        **kwargs
-    )
-    
-    native.filegroup(
-        name = name,
-        srcs = [":" + name + "_elaboration"],
         **kwargs
     )
