@@ -462,7 +462,8 @@ def ghdl_elab(
     arch = "",
     deps = [],
     elab_flags = [],
-    generics = []
+    generics = [],
+    **kwargs
 ):
     ghdl_units(
         name = name + "_top_level_unit",
@@ -470,7 +471,8 @@ def ghdl_elab(
             top,
         ],
         deps = deps,
-        lib = lib
+        lib = lib,
+        **kwargs
     )
     
     ghdl_elaboration(
@@ -480,11 +482,12 @@ def ghdl_elab(
         srcs = top,
         deps = [":" + name + "_top_level_unit"] + deps,
         elab_flags = elab_flags,
-        generics = generics
+        generics = generics,
+        **kwargs
     )
     
     native.filegroup(
         name = name,
         srcs = [":" + name + "_elaboration"],
-        visibility = ["//visibility:public"],
+        **kwargs
     )
