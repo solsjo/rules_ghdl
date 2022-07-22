@@ -427,6 +427,7 @@ ghdl_units = rule(
     },
 )
 
+
 def _ghdl_library_impl(ctx):
     return [
         GHDLFiles(lib_name=ctx.label.name)
@@ -436,6 +437,7 @@ def _ghdl_library_impl(ctx):
 ghdl_library = rule(
     implementation = _ghdl_library_impl,
 )
+
 
 ghdl_elaboration = rule(
     implementation = _ghdl_elaboration_impl,
@@ -448,7 +450,38 @@ ghdl_elaboration = rule(
 
         "elab_flags" : attr.string_list(mandatory=False, allow_empty=True),
         "generics" : attr.string_list(mandatory=False, allow_empty=True), # Should be dict
-
     },
     toolchains = ["@rules_ghdl//:ghdl_toolchain_type"]
 )
+
+def ghdl_elab(
+    name,
+    entity_name,
+    top,
+    lib,
+    arch = "",
+    deps = [],
+    elab_flags = [],
+    generics = [],
+    **kwargs
+):
+    ghdl_units(
+        name = name + "_top_level_unit",
+        srcs = [
+            top,
+        ],
+        deps = deps,
+        lib = lib,
+        **kwargs
+    )
+    
+    ghdl_elaboration(
+        name = name,
+        entity_name = entity_name,
+        arch = arch,
+        srcs = top,
+        deps = [":" + name + "_top_level_unit"] + deps,
+        elab_flags = elab_flags,
+        generics = generics,
+        **kwargs
+    )

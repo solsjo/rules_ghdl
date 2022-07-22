@@ -1,4 +1,4 @@
-load("@rules_ghdl//:ghdl.bzl", "ghdl_units", "ghdl_library", "ghdl_elaboration")
+load("@rules_ghdl//:ghdl.bzl", "ghdl_units", "ghdl_library", "ghdl_elab")
 
 ghdl_library(name="ghdl_example_lib")
 
@@ -11,19 +11,11 @@ ghdl_units(
     lib = ":ghdl_example_lib"
 )
 
-ghdl_units(
-    name = "counter_tb",
-    srcs = [
-        "testbench/counter_tb.vhd",
-    ],
-    deps = [":counter"],
-    lib = ":ghdl_example_lib"
-)
-
-ghdl_elaboration(
+ghdl_elab(
     name = "ghdl_example_tb",
     entity_name = "counter_tb",
     arch = "testbench",
-    srcs = ":testbench/counter_tb.vhd",
-    deps = [":counter_tb"]
+    top = ":testbench/counter_tb.vhd",
+    lib = ":ghdl_example_lib",
+    deps = [":counter"]
 )
