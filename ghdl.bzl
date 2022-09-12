@@ -161,7 +161,7 @@ def _ghdl_units_impl(ctx):
     for dep in ctx.attr.deps:
         src_map.update(dep[GHDLFiles].src_map)
         for src, settings in dep[GHDLFiles].src_map.items():
-            if lib_id != settings["lib_name"]:
+            if lib_id != settings["lib_name"] and settings["lib_name"] not in unit_lib_deps:
                 unit_lib_deps.append(settings["lib_name"])
 
     for src in ctx.files.srcs:
@@ -169,7 +169,8 @@ def _ghdl_units_impl(ctx):
             "unit_lib_deps": unit_lib_deps,
             "lib_name": lib_id,
             "unit_settings": unit_settings,
-            "flags": ctx.attr.flags
+            "flags": ctx.attr.flags,
+            "file_deps": trans_srcs
             }
 
     return [
@@ -218,7 +219,6 @@ def get_elaboration_artifact(ctx, working_dir):
     elaboration_artifact = ctx.actions.declare_file("{}/{}".format(working_dir, elaboration_artifact_name))
     return elaboration_artifact_name, elaboration_artifact
 
-
 def _ghdl_analysis(ctx, info, src, src_map, lib_cfg_map, compiled_output_files, compiled_srcs, srcs):
     ghdl_tool = info.wrapper.files.to_list()[0]
     docker = info.docker;
@@ -256,8 +256,14 @@ def _ghdl_analysis(ctx, info, src, src_map, lib_cfg_map, compiled_output_files, 
     sym_cf_files = create_lib_file_sym_links(ctx, lib, p_deps, "objs", src)
 
     inputs = []
-    inputs.extend(work_dir_symlink_srcs)
-    inputs.extend(compiled_srcs)
+    w_src_names = {w: w.basename for w in work_dir_symlink_srcs}
+    names = [s.basename for s in src_map[src]["file_deps"].to_list()]
+    for w_src, name in w_src_names.items():
+        if name in names:
+            inputs.append(w_src)
+    for c_src in compiled_srcs:
+        if c_src in src_map[src]["file_deps"].to_list():
+            inputs.append(c_src)
     inputs.append(sym_src)
     if curr_lib_file:
         inputs.append(curr_lib_file)
